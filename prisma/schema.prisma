@@ -1,0 +1,258 @@
+// Connettore Fiscale - Database Schema
+// Middleware SaaS: Stripe/Shopify → Fatturazione Elettronica Italia
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// MERCHANT (chi usa il connettore fiscale)
+// ============================================================
+model Merchant {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String?  // bcrypt hash (opzionale per login passwordless)
+  company   String?  // Ragione sociale
+  vatNumber String?  // P.IVA del merchant
+  fiscalCode String? // CF del merchant
+
+  // Regime Fiscale (RF01 = Ordinario, RF19 = Forfettario, ecc.)
+  taxRegime String @default("RF19")
+
+  // Configurazione bollo
+  bolloPolicy BolloPolicy @default(CHARGE_CUSTOMER)
+
+  // Chiavi API cifrate (AES-256)
+  stripeApiKeyEnc        String?
+  stripeWebhookSecretEnc String?
+  ficApiKeyEnc           String?  // Fatture in Cloud
+  ficCompanyId           String?
+
+  // Branding per Magic Link
+  logoUrl    String?
+  brandColor String? @default("#2563eb")
+
+  // Stato
+  isActive   Boolean  @default(true)
+  onboarded  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relazioni
+  invoices    Invoice[]
+  magicLinks  MagicLink[]
+  auditLogs   AuditLog[]
+  customers   Customer[]
+  loginTokens LoginToken[]
+
+  @@map("merchants")
+}
+
+// ============================================================
+// CUSTOMER (cliente finale del merchant)
+// ============================================================
+model Customer {
+  id         String  @id @default(cuid())
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  email      String
+  name       String?
+  fiscalCode String?  // Codice Fiscale
+  vatNumber  String?  // Partita IVA (se azienda)
+  sdiCode    String?  // Codice Destinatario SDI (7 chars) o PEC
+  pecEmail   String?
+
+  // Indirizzo
+  address    String?
+  city       String?
+  province   String?  // 2 chars (es. MI, RM)
+  zipCode    String?  // CAP 5 digits
+  country    String   @default("IT")
+
+  // Tipo cliente
+  customerType CustomerType @default(PRIVATE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices   Invoice[]
+  magicLinks MagicLink[]
+
+  @@unique([merchantId, email])
+  @@map("customers")
+}
+
+enum CustomerType {
+  PRIVATE    // Persona fisica (CF obbligatorio)
+  BUSINESS   // Azienda (P.IVA obbligatoria)
+  FOREIGN    // Cliente estero
+}
+
+enum BolloPolicy {
+  CHARGE_CUSTOMER  // Addebita il bollo al cliente (+2€)
+  ABSORB_COST      // Il merchant assorbe il costo
+}
+
+// ============================================================
+// INVOICE (fattura elettronica)
+// ============================================================
+model Invoice {
+  id          String  @id @default(cuid())
+  merchantId  String
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+
+  // Dati sorgente (idempotenza)
+  sourceType     SourceType
+  sourceId       String        // Stripe payment_intent ID, Shopify order ID
+  sourceData     Json?         // Payload originale
+
+  // Stato del workflow
+  status         InvoiceStatus @default(PENDING_DATA)
+
+  // Dati fattura
+  invoiceNumber  String?
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("EUR")
+  description    String?
+
+  // Dettaglio righe
+  lineItems      Json?
+
+  // IVA e bollo
+  vatRate        Decimal?      @db.Decimal(5, 2)
+  vatNature      String?       // Codice Natura IVA (N2.1, N2.2, ecc.)
+  bolloApplied   Boolean       @default(false)
+  bolloAmount    Decimal?      @db.Decimal(5, 2)
+
+  // Riferimenti gestionale
+  ficDocumentId  String?       // ID documento su Fatture in Cloud
+  sdiIdentifier  String?       // Identificativo SDI
+
+  // Errori
+  lastError      String?       // Messaggio errore "umano"
+  errorCode      String?
+  retryCount     Int           @default(0)
+  nextRetryAt    DateTime?
+
+  // Tracking
+  sentAt         DateTime?
+  acceptedAt     DateTime?
+  rejectedAt     DateTime?
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  magicLinks MagicLink[]
+  auditLogs  AuditLog[]
+
+  @@unique([merchantId, sourceType, sourceId]) // Idempotenza!
+  @@index([status])
+  @@index([merchantId, createdAt])
+  @@map("invoices")
+}
+
+enum SourceType {
+  STRIPE
+  SHOPIFY
+}
+
+enum InvoiceStatus {
+  PENDING_DATA       // Dati fiscali mancanti
+  VALIDATING         // Validazione in corso
+  READY              // Pronta per l'invio
+  SENDING            // In fase di invio
+  SENT               // Inviata allo SDI
+  ACCEPTED           // Accettata dallo SDI
+  REJECTED           // Rifiutata dallo SDI
+  ERROR              // Errore (retry possibile)
+  FAILED             // Fallita definitivamente
+}
+
+// ============================================================
+// MAGIC LINK (recupero dati fiscali post-vendita)
+// ============================================================
+model MagicLink {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  merchantId  String
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+
+  // Stato
+  isCompleted Boolean  @default(false)
+  isExpired   Boolean  @default(false)
+
+  // Tracking comunicazioni
+  emailSentAt    DateTime?
+  smsSentAt      DateTime?
+  reminderCount  Int     @default(0)
+  lastReminderAt DateTime?
+
+  // Dati inseriti dal cliente
+  submittedData Json?
+
+  expiresAt   DateTime
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([token])
+  @@index([invoiceId])
+  @@map("magic_links")
+}
+
+// ============================================================
+// AUDIT LOG (tracciabilità completa)
+// ============================================================
+model AuditLog {
+  id         String   @id @default(cuid())
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  invoiceId  String?
+  invoice    Invoice? @relation(fields: [invoiceId], references: [id])
+
+  action     String   // es. "WEBHOOK_RECEIVED", "INVOICE_CREATED"
+  details    String?  // Messaggio leggibile
+  metadata   Json?    // Dati tecnici extra
+  level      LogLevel @default(INFO)
+
+  createdAt  DateTime @default(now())
+
+  @@index([merchantId, createdAt])
+  @@index([invoiceId])
+  @@map("audit_logs")
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+}
+
+// ============================================================
+// LOGIN TOKEN (autenticazione passwordless merchant)
+// ============================================================
+model LoginToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  email      String
+  usedAt     DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([token])
+  @@map("login_tokens")
+}
