@@ -1,0 +1,1 @@
+- fai anche landing con seo ottimizzata
