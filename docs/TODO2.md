@@ -27,4 +27,7 @@ Configurare Resend per l'invio email (devo farlo io non tu)
 - leggi docs\analisi-v2.md, verifica il funzionamento del tutto, integra con tutti i servizi necessari
 
 - integrazione con pagamenti paypal o lemon squeeze è da fare?
-- devo creare quali servizi? db supabase? account di quali servizi? docs\TODO.md?
+- hai integrato tutto cio che conisgliava docs\analisi-v2.md?
+- ricerca altri servizi molto importanti da integrare in questa app e integrali
+- devo creare quali servizi? db supabase? account di quali servizi? docs\TODO.md? in file .env cosa manca di essenziale?
+- dimmi tutto cio che devo eseguire in locale per eseguire questa app e cosa devo fare per mandarela in produzione

@@ -1,10 +1,10 @@
 /**
- * API Dashboard - Riconciliazione
+ * API Dashboard - Riconciliazione Multi-Provider
  *
- * GET /api/dashboard/reconciliation → Confronto Stripe vs Fatturato SDI
+ * GET /api/dashboard/reconciliation → Confronto pagamenti vs Fatturato SDI
  *
- * Mostra il totale pagamenti Stripe, il totale fatture inviate/accettate,
- * e identifica eventuali discrepanze.
+ * Mostra il totale pagamenti per ogni provider, il totale fatture inviate/accettate,
+ * e identifica eventuali discrepanze. Supporta Stripe, Shopify, WooCommerce, PayPal.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -32,30 +32,40 @@ export async function GET(request: NextRequest) {
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0, 23, 59, 59);
 
-  // Totale pagamenti (tutte le fatture create da Stripe in quel mese)
+  const sourceTypes = ["STRIPE", "SHOPIFY", "WOOCOMMERCE", "PAYPAL"] as const;
+
+  // Raccogli dati per ogni provider in parallelo
   const [
-    stripeTotal,
+    providerTotals,
     invoicedTotal,
     pendingInvoices,
     failedInvoices,
     creditNotesTotal,
   ] = await Promise.all([
-    // Tutto ciò che è arrivato da Stripe nel mese
-    prisma.invoice.aggregate({
-      where: {
-        merchantId,
-        sourceType: "STRIPE",
-        createdAt: { gte: startDate, lte: endDate },
-      },
-      _sum: { amount: true },
-      _count: true,
-    }),
+    // Totali per ogni provider
+    Promise.all(
+      sourceTypes.map(async (source) => {
+        const agg = await prisma.invoice.aggregate({
+          where: {
+            merchantId,
+            sourceType: source,
+            createdAt: { gte: startDate, lte: endDate },
+          },
+          _sum: { amount: true },
+          _count: true,
+        });
+        return {
+          source,
+          totalAmount: Number(agg._sum.amount ?? 0),
+          transactionCount: agg._count,
+        };
+      }),
+    ),
 
-    // Fatture effettivamente inviate/accettate dallo SDI
+    // Fatture effettivamente inviate/accettate dallo SDI (tutti i provider)
     prisma.invoice.aggregate({
       where: {
         merchantId,
-        sourceType: "STRIPE",
         status: { in: ["SENT", "ACCEPTED"] },
         createdAt: { gte: startDate, lte: endDate },
       },
@@ -63,7 +73,7 @@ export async function GET(request: NextRequest) {
       _count: true,
     }),
 
-    // Fatture ancora in pending (dati mancanti, in validazione, ecc.)
+    // Fatture ancora in pending
     prisma.invoice.count({
       where: {
         merchantId,
@@ -93,10 +103,25 @@ export async function GET(request: NextRequest) {
     }),
   ]);
 
-  const stripeAmount = Number(stripeTotal._sum.amount ?? 0);
+  // Crea breakdown per provider
+  const providers: Record<
+    string,
+    { totalAmount: number; transactionCount: number }
+  > = {};
+  let allProvidersAmount = 0;
+  for (const pt of providerTotals) {
+    if (pt.transactionCount > 0) {
+      providers[pt.source.toLowerCase()] = {
+        totalAmount: pt.totalAmount,
+        transactionCount: pt.transactionCount,
+      };
+    }
+    allProvidersAmount += pt.totalAmount;
+  }
+
   const invoicedAmount = Number(invoicedTotal._sum.amount ?? 0);
   const creditNotesAmount = Number(creditNotesTotal._sum.amount ?? 0);
-  const gap = stripeAmount - invoicedAmount;
+  const gap = allProvidersAmount - invoicedAmount;
 
   // Stato riconciliazione
   let reconciliationStatus: "MATCH" | "WARNING" | "MISMATCH";
@@ -114,9 +139,13 @@ export async function GET(request: NextRequest) {
       month,
       label: `${String(month).padStart(2, "0")}/${year}`,
     },
-    stripe: {
-      totalAmount: stripeAmount,
-      transactionCount: stripeTotal._count,
+    providers,
+    totalPayments: {
+      totalAmount: allProvidersAmount,
+      transactionCount: providerTotals.reduce(
+        (s, p) => s + p.transactionCount,
+        0,
+      ),
     },
     invoiced: {
       totalAmount: invoicedAmount,

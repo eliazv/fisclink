@@ -4,7 +4,7 @@
 // Verifica SDI, reminder automatici, cleanup, report
 
 import { prisma } from "@/lib/db";
-import { enqueueInvoiceSend, enqueueMagicLinkReminder } from "@/lib/queue";
+import { enqueueInvoiceSend, scheduleMagicLinkReminder } from "@/lib/queue";
 
 /**
  * Controlla lo stato SDI delle fatture inviate.
@@ -28,7 +28,11 @@ export async function checkSDIStatus() {
     try {
       // La logica di polling SDI è nel worker invoice:send
       // Qui re-enqueue il job per check stato
-      await enqueueInvoiceSend(invoice.id);
+      await enqueueInvoiceSend({
+        invoiceId: invoice.id,
+        merchantId: invoice.merchantId,
+        ficDocumentId: invoice.ficDocumentId ?? 0,
+      });
     } catch (error) {
       console.error(`[CRON] Errore check SDI per ${invoice.id}:`, error);
     }
@@ -67,7 +71,15 @@ export async function sendPendingReminders() {
 
     if (shouldRemind && now - lastReminderMs > ONE_DAY) {
       try {
-        await enqueueMagicLinkReminder(link.id);
+        await scheduleMagicLinkReminder(
+          {
+            magicLinkId: link.id,
+            invoiceId: link.invoiceId,
+            merchantId: link.merchantId,
+            reminderNumber: link.reminderCount + 1,
+          },
+          0, // Esegui subito — il cron ha già calcolato il timing
+        );
         console.log(
           `[CRON] Reminder ${link.reminderCount + 1} inviato per magic link ${link.id}`,
         );
@@ -141,7 +153,16 @@ export async function retryFailedInvoices() {
       });
       // Re-enqueue usando la funzione importata
       const { enqueueInvoiceProcess } = await import("@/lib/queue");
-      await enqueueInvoiceProcess(invoice.id);
+      await enqueueInvoiceProcess({
+        invoiceId: invoice.id,
+        merchantId: invoice.merchantId,
+        sourceType: invoice.sourceType as
+          | "STRIPE"
+          | "SHOPIFY"
+          | "WOOCOMMERCE"
+          | "PAYPAL",
+        sourceId: invoice.sourceId,
+      });
       console.log(
         `[CRON] Retry fattura ${invoice.id} (tentativo ${invoice.retryCount + 1})`,
       );

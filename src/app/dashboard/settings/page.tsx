@@ -1,43 +1,260 @@
 /**
  * Pagina Impostazioni - Configurazione chiavi API e preferenze
+ * Collegata al backend via /api/settings (GET/PUT) e /api/settings/tax-mapping
  */
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+interface SettingsData {
+  stripeApiKey: string;
+  stripeWebhookSecret: string;
+  ficApiKey: string;
+  ficCompanyId: string;
+  shopifyApiKey: string;
+  shopifyWebhookSecret: string;
+  shopifyShopDomain: string;
+  wooConsumerKey: string;
+  wooConsumerSecret: string;
+  wooStoreUrl: string;
+  wooWebhookSecret: string;
+  taxRegime: string;
+  bolloPolicy: string;
+  brandColor: string;
+  logoUrl: string;
+}
+
+interface TaxMapping {
+  id: string;
+  stripeTaxCode: string;
+  stripeTaxLabel: string;
+  ficVatId: number;
+  ficVatRate: number;
+  ficVatNature: string;
+  isDefault: boolean;
+}
+
+interface StatusFlags {
+  hasStripeKey: boolean;
+  hasFicToken: boolean;
+  hasShopifyKey: boolean;
+  hasWooCommerceKey: boolean;
+}
 
 export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [testing, setTesting] = useState<string | null>(null);
+  const [testResult, setTestResult] = useState<{
+    type: string;
+    ok: boolean;
+    msg: string;
+  } | null>(null);
+  const [statusFlags, setStatusFlags] = useState<StatusFlags>({
+    hasStripeKey: false,
+    hasFicToken: false,
+    hasShopifyKey: false,
+    hasWooCommerceKey: false,
+  });
+  const [taxMappings, setTaxMappings] = useState<TaxMapping[]>([]);
+  const [newMapping, setNewMapping] = useState({
+    stripeTaxCode: "",
+    stripeTaxLabel: "",
+    ficVatId: 0,
+    ficVatRate: 22,
+    ficVatNature: "",
+    isDefault: false,
+  });
 
-  const [settings, setSettings] = useState({
-    // Stripe
+  const [settings, setSettings] = useState<SettingsData>({
     stripeApiKey: "",
     stripeWebhookSecret: "",
-    // Fatture in Cloud
     ficApiKey: "",
     ficCompanyId: "",
-    // Regime fiscale
+    shopifyApiKey: "",
+    shopifyWebhookSecret: "",
+    shopifyShopDomain: "",
+    wooConsumerKey: "",
+    wooConsumerSecret: "",
+    wooStoreUrl: "",
+    wooWebhookSecret: "",
     taxRegime: "RF19",
     bolloPolicy: "CHARGE_CUSTOMER",
-    // Branding
     brandColor: "#2563eb",
     logoUrl: "",
   });
 
+  // Carica settings dal backend
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings");
+      if (!res.ok) throw new Error("Errore caricamento impostazioni");
+      const data = await res.json();
+      setSettings((prev) => ({
+        ...prev,
+        ficCompanyId: data.ficCompanyId ?? "",
+        taxRegime: data.taxRegime ?? "RF19",
+        bolloPolicy: data.bolloPolicy ?? "CHARGE_CUSTOMER",
+        brandColor: data.brandColor ?? "#2563eb",
+        logoUrl: data.logoUrl ?? "",
+        shopifyShopDomain: data.shopifyShopDomain ?? "",
+        wooStoreUrl: data.wooCommerceStoreUrl ?? "",
+      }));
+      setStatusFlags({
+        hasStripeKey: data.hasStripeKey ?? false,
+        hasFicToken: data.hasFicToken ?? false,
+        hasShopifyKey: data.hasShopifyKey ?? false,
+        hasWooCommerceKey: data.hasWooCommerceKey ?? false,
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Errore sconosciuto");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadTaxMappings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings/tax-mapping");
+      if (res.ok) {
+        const data = await res.json();
+        setTaxMappings(data.mappings ?? []);
+      }
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+    loadTaxMappings();
+  }, [loadSettings, loadTaxMappings]);
+
   const handleSave = async () => {
     setSaving(true);
     setSaved(false);
+    setError(null);
 
     try {
-      // TODO: POST a /api/settings
-      await new Promise((r) => setTimeout(r, 1000)); // Simulazione
+      const body: Record<string, unknown> = {
+        taxRegime: settings.taxRegime,
+        bolloPolicy: settings.bolloPolicy,
+        brandColor: settings.brandColor,
+        logoUrl: settings.logoUrl || null,
+        ficCompanyId: settings.ficCompanyId || null,
+        shopifyShopDomain: settings.shopifyShopDomain || null,
+        wooCommerceStoreUrl: settings.wooStoreUrl || null,
+      };
+      // Solo invia le chiavi se l'utente le ha digitato (non vuote)
+      if (settings.stripeApiKey) body.stripeApiKey = settings.stripeApiKey;
+      if (settings.stripeWebhookSecret)
+        body.stripeWebhookSecret = settings.stripeWebhookSecret;
+      if (settings.ficApiKey) body.ficApiKey = settings.ficApiKey;
+      if (settings.shopifyApiKey) body.shopifyApiKey = settings.shopifyApiKey;
+      if (settings.shopifyWebhookSecret)
+        body.shopifyWebhookSecret = settings.shopifyWebhookSecret;
+      if (settings.wooConsumerKey)
+        body.wooCommerceConsumerKey = settings.wooConsumerKey;
+      if (settings.wooConsumerSecret)
+        body.wooCommerceConsumerSecret = settings.wooConsumerSecret;
+      if (settings.wooWebhookSecret)
+        body.wooCommerceWebhookSecret = settings.wooWebhookSecret;
+
+      const res = await fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error ?? `Errore HTTP ${res.status}`);
+      }
+
       setSaved(true);
+      // Ricarica le flags aggiornate
+      await loadSettings();
       setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Errore nel salvataggio");
     } finally {
       setSaving(false);
     }
   };
+
+  // Test connessione
+  const handleTest = async (type: "test-stripe" | "test-fic") => {
+    setTesting(type);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: type }),
+      });
+      const data = await res.json();
+      setTestResult({
+        type,
+        ok: data.success,
+        msg: data.success
+          ? `Connessione OK${data.storeName ? ` — ${data.storeName}` : ""}`
+          : (data.error ?? "Test fallito"),
+      });
+    } catch {
+      setTestResult({ type, ok: false, msg: "Errore di rete" });
+    } finally {
+      setTesting(null);
+    }
+  };
+
+  // Tax Mapping CRUD
+  const handleAddMapping = async () => {
+    if (!newMapping.stripeTaxCode) return;
+    try {
+      const res = await fetch("/api/settings/tax-mapping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newMapping),
+      });
+      if (res.ok) {
+        setNewMapping({
+          stripeTaxCode: "",
+          stripeTaxLabel: "",
+          ficVatId: 0,
+          ficVatRate: 22,
+          ficVatNature: "",
+          isDefault: false,
+        });
+        await loadTaxMappings();
+      }
+    } catch {
+      /* toast error */
+    }
+  };
+
+  const handleDeleteMapping = async (id: string) => {
+    try {
+      const res = await fetch("/api/settings/tax-mapping", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) await loadTaxMappings();
+    } catch {
+      /* silent */
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -48,14 +265,25 @@ export default function SettingsPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-800">
+          {error}
+        </div>
+      )}
+
       {/* Stripe */}
       <Section
         title="🔗 Stripe"
         description="Collega il tuo account Stripe per ricevere i pagamenti."
+        status={statusFlags.hasStripeKey ? "Collegato" : undefined}
       >
         <Field
           label="Secret Key"
-          placeholder="sk_live_..."
+          placeholder={
+            statusFlags.hasStripeKey
+              ? "••••••• (già configurata)"
+              : "sk_live_..."
+          }
           type="password"
           value={settings.stripeApiKey}
           onChange={(v) => setSettings((s) => ({ ...s, stripeApiKey: v }))}
@@ -63,50 +291,142 @@ export default function SettingsPage() {
         />
         <Field
           label="Webhook Secret"
-          placeholder="whsec_..."
+          placeholder={
+            statusFlags.hasStripeKey ? "••••••• (già configurato)" : "whsec_..."
+          }
           type="password"
           value={settings.stripeWebhookSecret}
           onChange={(v) =>
             setSettings((s) => ({ ...s, stripeWebhookSecret: v }))
           }
-          help="Si genera quando crei un Webhook Endpoint su Stripe"
         />
-        <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-          <p className="font-medium mb-1">
-            URL Webhook da configurare su Stripe:
+        <button
+          onClick={() => handleTest("test-stripe")}
+          disabled={testing !== null}
+          className="text-sm text-blue-600 hover:underline disabled:opacity-50"
+        >
+          {testing === "test-stripe"
+            ? "Test in corso..."
+            : "Testa connessione Stripe"}
+        </button>
+        {testResult?.type === "test-stripe" && (
+          <p
+            className={`text-sm ${testResult.ok ? "text-green-600" : "text-red-600"}`}
+          >
+            {testResult.msg}
           </p>
-          <code className="text-xs bg-blue-100 px-2 py-1 rounded">
-            {typeof window !== "undefined"
-              ? window.location.origin
-              : "https://tuodominio.com"}
-            /api/webhooks/stripe?merchant=YOUR_MERCHANT_ID
-          </code>
-          <p className="mt-2 text-xs">
-            Eventi da attivare: <code>checkout.session.completed</code>,{" "}
-            <code>payment_intent.succeeded</code>
-          </p>
-        </div>
+        )}
       </Section>
 
       {/* Fatture in Cloud */}
       <Section
         title="📄 Fatture in Cloud"
         description="Collega il tuo account Fatture in Cloud per la fatturazione elettronica."
+        status={statusFlags.hasFicToken ? "Collegato" : undefined}
       >
         <Field
           label="API Key (Bearer Token)"
-          placeholder="Il tuo access token..."
+          placeholder={
+            statusFlags.hasFicToken ? "••••••• (già configurata)" : "Token..."
+          }
           type="password"
           value={settings.ficApiKey}
           onChange={(v) => setSettings((s) => ({ ...s, ficApiKey: v }))}
-          help="Vai su Fatture in Cloud → Impostazioni → API per generare il token"
         />
         <Field
           label="Company ID"
           placeholder="123456"
           value={settings.ficCompanyId}
           onChange={(v) => setSettings((s) => ({ ...s, ficCompanyId: v }))}
-          help="L'ID della tua azienda su Fatture in Cloud"
+        />
+        <button
+          onClick={() => handleTest("test-fic")}
+          disabled={testing !== null}
+          className="text-sm text-blue-600 hover:underline disabled:opacity-50"
+        >
+          {testing === "test-fic"
+            ? "Test in corso..."
+            : "Testa connessione FiC"}
+        </button>
+        {testResult?.type === "test-fic" && (
+          <p
+            className={`text-sm ${testResult.ok ? "text-green-600" : "text-red-600"}`}
+          >
+            {testResult.msg}
+          </p>
+        )}
+      </Section>
+
+      {/* Shopify */}
+      <Section
+        title="🛍️ Shopify"
+        description="Collega il tuo shop Shopify per ricevere ordini e creare fatture."
+        status={statusFlags.hasShopifyKey ? "Collegato" : undefined}
+      >
+        <Field
+          label="Shop Domain"
+          placeholder="myshop.myshopify.com"
+          value={settings.shopifyShopDomain}
+          onChange={(v) => setSettings((s) => ({ ...s, shopifyShopDomain: v }))}
+        />
+        <Field
+          label="Admin API Access Token"
+          placeholder={
+            statusFlags.hasShopifyKey
+              ? "••••••• (già configurato)"
+              : "shpat_..."
+          }
+          type="password"
+          value={settings.shopifyApiKey}
+          onChange={(v) => setSettings((s) => ({ ...s, shopifyApiKey: v }))}
+        />
+        <Field
+          label="Webhook Secret"
+          placeholder="Shopify webhook signing secret"
+          type="password"
+          value={settings.shopifyWebhookSecret}
+          onChange={(v) =>
+            setSettings((s) => ({ ...s, shopifyWebhookSecret: v }))
+          }
+        />
+      </Section>
+
+      {/* WooCommerce */}
+      <Section
+        title="🛒 WooCommerce"
+        description="Collega il tuo store WooCommerce per sincronizzare ordini."
+        status={statusFlags.hasWooCommerceKey ? "Collegato" : undefined}
+      >
+        <Field
+          label="Store URL"
+          placeholder="https://mionegozio.com"
+          value={settings.wooStoreUrl}
+          onChange={(v) => setSettings((s) => ({ ...s, wooStoreUrl: v }))}
+        />
+        <Field
+          label="Consumer Key"
+          placeholder={
+            statusFlags.hasWooCommerceKey
+              ? "••••••• (già configurata)"
+              : "ck_..."
+          }
+          type="password"
+          value={settings.wooConsumerKey}
+          onChange={(v) => setSettings((s) => ({ ...s, wooConsumerKey: v }))}
+        />
+        <Field
+          label="Consumer Secret"
+          placeholder="cs_..."
+          type="password"
+          value={settings.wooConsumerSecret}
+          onChange={(v) => setSettings((s) => ({ ...s, wooConsumerSecret: v }))}
+        />
+        <Field
+          label="Webhook Secret"
+          placeholder="Webhook signing secret"
+          type="password"
+          value={settings.wooWebhookSecret}
+          onChange={(v) => setSettings((s) => ({ ...s, wooWebhookSecret: v }))}
         />
       </Section>
 
@@ -151,14 +471,93 @@ export default function SettingsPage() {
               A carico mio (bollo non addebitato)
             </option>
           </select>
-          <p className="text-xs text-gray-400 mt-1">
-            Il bollo di 2€ è obbligatorio per fatture esenti IVA superiori a
-            77,47€
-          </p>
         </div>
       </Section>
 
-      {/* Branding Magic Link */}
+      {/* Tax Mapping */}
+      <Section
+        title="📊 Mapping Aliquote IVA"
+        description="Mappa i codici tax di Stripe alle aliquote IVA di Fatture in Cloud."
+      >
+        {taxMappings.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b">
+                  <th className="pb-2">Codice Stripe</th>
+                  <th className="pb-2">IVA %</th>
+                  <th className="pb-2">Natura</th>
+                  <th className="pb-2">Default</th>
+                  <th className="pb-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {taxMappings.map((m) => (
+                  <tr key={m.id} className="border-b">
+                    <td className="py-2 font-mono text-xs">
+                      {m.stripeTaxCode}
+                    </td>
+                    <td className="py-2">{m.ficVatRate}%</td>
+                    <td className="py-2">{m.ficVatNature || "—"}</td>
+                    <td className="py-2">{m.isDefault ? "✓" : ""}</td>
+                    <td className="py-2">
+                      <button
+                        onClick={() => handleDeleteMapping(m.id)}
+                        className="text-red-500 hover:underline text-xs"
+                      >
+                        Elimina
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3">
+          <Field
+            label="Codice Tax Stripe"
+            placeholder="txr_123 o txcd_10000000"
+            value={newMapping.stripeTaxCode}
+            onChange={(v) => setNewMapping((m) => ({ ...m, stripeTaxCode: v }))}
+          />
+          <Field
+            label="Aliquota IVA %"
+            placeholder="22"
+            type="number"
+            value={String(newMapping.ficVatRate)}
+            onChange={(v) =>
+              setNewMapping((m) => ({ ...m, ficVatRate: Number(v) }))
+            }
+          />
+          <Field
+            label="Natura IVA (opzionale)"
+            placeholder="N2.2, N4, ecc."
+            value={newMapping.ficVatNature}
+            onChange={(v) => setNewMapping((m) => ({ ...m, ficVatNature: v }))}
+          />
+          <div className="flex items-end">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={newMapping.isDefault}
+                onChange={(e) =>
+                  setNewMapping((m) => ({ ...m, isDefault: e.target.checked }))
+                }
+              />
+              Default
+            </label>
+          </div>
+        </div>
+        <button
+          onClick={handleAddMapping}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          + Aggiungi mapping
+        </button>
+      </Section>
+
+      {/* Branding */}
       <Section
         title="🎨 Branding"
         description="Personalizza l'aspetto delle email e delle pagine Magic Link."
@@ -174,7 +573,6 @@ export default function SettingsPage() {
           placeholder="https://esempio.com/logo.png"
           value={settings.logoUrl}
           onChange={(v) => setSettings((s) => ({ ...s, logoUrl: v }))}
-          help="Verrà mostrato nelle email e nella pagina di recupero dati fiscali"
         />
       </Section>
 
@@ -188,7 +586,7 @@ export default function SettingsPage() {
           {saving ? "Salvataggio..." : "Salva impostazioni"}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 font-medium animate-fade-in">
+          <span className="text-sm text-green-600 font-medium">
             ✓ Salvato con successo
           </span>
         )}
@@ -200,15 +598,24 @@ export default function SettingsPage() {
 function Section({
   title,
   description,
+  status,
   children,
 }: {
   title: string;
   description: string;
+  status?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        {status && (
+          <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+            ✓ {status}
+          </span>
+        )}
+      </div>
       <p className="text-sm text-gray-500 mb-4">{description}</p>
       <div className="space-y-4">{children}</div>
     </div>

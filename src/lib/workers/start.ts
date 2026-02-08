@@ -30,7 +30,7 @@ const invoiceProcessWorker = new Worker(
     console.log(
       `📄 [invoice:process] Job ${job.id} - Invoice ${job.data.invoiceId}`,
     );
-    await processInvoice(job.data.invoiceId);
+    await processInvoice(job.data);
   },
   {
     connection,
@@ -46,7 +46,7 @@ const invoiceSendWorker = new Worker(
     console.log(
       `📤 [invoice:send] Job ${job.id} - Invoice ${job.data.invoiceId}`,
     );
-    await processSendToSDI(job.data.invoiceId);
+    await processSendToSDI(job.data);
   },
   {
     connection,
@@ -62,7 +62,7 @@ const magicLinkSendWorker = new Worker(
     console.log(
       `✉️ [magiclink:send] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
     );
-    await processMagicLinkSend(job.data.magicLinkId);
+    await processMagicLinkSend(job.data);
   },
   {
     connection,
@@ -77,7 +77,7 @@ const magicLinkReminderWorker = new Worker(
     console.log(
       `🔔 [magiclink:reminder] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
     );
-    await processMagicLinkReminder(job.data.magicLinkId);
+    await processMagicLinkReminder(job.data);
   },
   {
     connection,

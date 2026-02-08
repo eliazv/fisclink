@@ -11,6 +11,8 @@
 
 import { prisma } from "@/lib/db";
 import { validateFiscalData, type FiscalData } from "@/lib/validators/fiscal";
+import { validateVatVIES, isEUCountry } from "@/lib/validators/vies";
+import { classifySale, getOSSInvoiceNote } from "@/lib/oss";
 import {
   calculateBollo,
   getDicituraForfettario,
@@ -194,9 +196,104 @@ async function createAndSendInvoice(
       data: { status: "SENDING" },
     });
 
+    const customerCountry = (fiscalData.country ?? "IT").toUpperCase();
+    const isB2B = !!fiscalData.vatNumber;
+
+    // --- VIES: Verifica P.IVA reale nel registro europeo ---
+    if (fiscalData.vatNumber && isEUCountry(customerCountry)) {
+      try {
+        const viesResult = await validateVatVIES(
+          customerCountry,
+          fiscalData.vatNumber.replace(/^[A-Z]{2}/i, ""),
+        );
+
+        await logAudit(merchant.id, invoice.id, "VIES_VALIDATION", {
+          valid: viesResult.valid,
+          countryCode: viesResult.countryCode,
+          name: viesResult.name,
+          error: viesResult.error,
+        });
+
+        if (!viesResult.valid && !viesResult.error) {
+          // P.IVA non valida nel registro VIES (non è un errore di rete)
+          await prisma.invoice.update({
+            where: { id: invoice.id },
+            data: {
+              status: "ERROR",
+              lastError: `P.IVA ${customerCountry}${fiscalData.vatNumber} non trovata nel registro VIES. Verificare i dati con il cliente.`,
+            },
+          });
+          return;
+        }
+      } catch (viesError) {
+        // Fail-open: se VIES è irraggiungibile, procediamo
+        await logAudit(merchant.id, invoice.id, "VIES_VALIDATION_SKIPPED", {
+          reason: "VIES non raggiungibile, si procede con validazione formale",
+        });
+      }
+    }
+
+    // --- OSS: Classificazione vendita ---
+    const ossClassification = classifySale(
+      "IT",
+      customerCountry,
+      isB2B,
+      merchant.taxRegime,
+    );
+    const ossNote = getOSSInvoiceNote(ossClassification);
+
+    // Aggiorna campi OSS sulla fattura
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        ossApplicable: ossClassification.ossReportable,
+        customerCountry,
+        saleType: ossClassification.saleType,
+        ossVatRate: ossClassification.vatRate ?? undefined,
+        ossNote: ossNote || null,
+      },
+    });
+
+    await logAudit(merchant.id, invoice.id, "OSS_CLASSIFICATION", {
+      saleType: ossClassification.saleType,
+      vatRate: ossClassification.vatRate,
+      ossReportable: ossClassification.ossReportable,
+      sendToSDI: ossClassification.sendToSDI,
+    });
+
+    // Se la fattura OSS non va allo SDI (EU B2C OSS regime ordinario)
+    // la creiamo comunque su FiC ma non inviamo allo SDI
+    const skipSDI = !ossClassification.sendToSDI;
+
+    // --- TaxMapping: cerca mapping personalizzato ---
+    let ficVatId: number | undefined;
+    let actualVatNature = invoice.vatNature;
+
+    if (ossClassification.vatNature) {
+      actualVatNature = ossClassification.vatNature;
+    } else {
+      const regime = REGIMI_FISCALI[merchant.taxRegime];
+      actualVatNature = actualVatNature ?? regime?.vatNature ?? null;
+    }
+
+    // Cerca un TaxMapping specifico del merchant
+    const taxMapping = await prisma.taxMapping.findFirst({
+      where: {
+        merchantId: merchant.id,
+        OR: [{ stripeTaxCode: invoice.sourceId }, { isDefault: true }],
+      },
+      orderBy: { isDefault: "asc" }, // Priorità al match specifico
+    });
+
+    if (taxMapping) {
+      ficVatId = taxMapping.ficVatId;
+      if (taxMapping.ficVatNature) {
+        actualVatNature = taxMapping.ficVatNature;
+      }
+    }
+
     // Determina natura IVA dal regime fiscale
-    const regime = REGIMI_FISCALI[merchant.taxRegime];
-    const vatNature = invoice.vatNature ?? regime?.vatNature ?? null;
+    const vatNature = actualVatNature;
 
     // Calcola bollo
     const bolloCalc = calculateBollo(
@@ -207,10 +304,13 @@ async function createAndSendInvoice(
 
     const bolloAmount = bolloCalc.required ? bolloCalc.amount : 0;
 
-    // Dicitura obbligatoria
+    // Dicitura obbligatoria (combina regime + OSS)
     let notes = "";
     if (merchant.taxRegime === "RF19") {
       notes = getDicituraForfettario();
+    }
+    if (ossNote) {
+      notes = notes ? `${notes}\n${ossNote}` : ossNote;
     }
 
     // Costruisci payload
@@ -266,6 +366,23 @@ async function createAndSendInvoice(
       number: ficResponse.data.number,
       bollo: bolloCalc,
     });
+
+    // Se vendita OSS B2C (non va allo SDI), segna come SENT senza invio
+    if (skipSDI) {
+      await prisma.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          status: "SENT",
+          sentAt: new Date(),
+        },
+      });
+
+      await logAudit(merchant.id, invoice.id, "SDI_SKIPPED_OSS", {
+        reason: "Vendita OSS B2C — fattura non inviata allo SDI",
+        saleType: ossClassification.saleType,
+      });
+      return;
+    }
 
     // Accoda invio SDI
     await enqueueInvoiceSend({

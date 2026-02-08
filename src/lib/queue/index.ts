@@ -39,7 +39,7 @@ export const QUEUE_NAMES = {
 export interface InvoiceProcessJobData {
   invoiceId: string;
   merchantId: string;
-  sourceType: "STRIPE" | "SHOPIFY";
+  sourceType: "STRIPE" | "SHOPIFY" | "WOOCOMMERCE" | "PAYPAL";
   sourceId: string;
 }
 

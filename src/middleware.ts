@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 
 const PUBLIC_PATHS = [
   "/",
@@ -12,6 +13,7 @@ const PUBLIC_PATHS = [
   "/magic",
   "/api/accountant",
   "/accountant",
+  "/api/health",
 ];
 
 function isPublicPath(pathname: string): boolean {
@@ -20,13 +22,16 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
+function getClientIP(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // Le route pubbliche non richiedono auth
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
-  }
 
   // Le risorse statiche passano sempre
   if (
@@ -34,6 +39,43 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/favicon") ||
     pathname.includes(".")
   ) {
+    return NextResponse.next();
+  }
+
+  // --- Rate Limiting ---
+  if (pathname.startsWith("/api/")) {
+    const ip = getClientIP(req);
+    let rlConfig = RATE_LIMITS.api;
+
+    if (pathname.startsWith("/api/webhooks/")) {
+      rlConfig = RATE_LIMITS.webhook;
+    } else if (pathname.startsWith("/api/auth/")) {
+      rlConfig = RATE_LIMITS.auth;
+    } else if (pathname.startsWith("/api/magic-link")) {
+      rlConfig = RATE_LIMITS.magicLink;
+    } else if (pathname.startsWith("/api/reports")) {
+      rlConfig = RATE_LIMITS.reports;
+    }
+
+    const rlResult = checkRateLimit(`${ip}:${pathname}`, rlConfig);
+
+    if (!rlResult.allowed) {
+      return NextResponse.json(
+        { error: "Troppe richieste. Riprova tra qualche minuto." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(rlResult.retryAfter ?? 60),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rlResult.resetAt),
+          },
+        },
+      );
+    }
+  }
+
+  // Le route pubbliche non richiedono auth
+  if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
 
