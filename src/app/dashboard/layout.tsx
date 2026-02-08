@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard | Connettore Fiscale",
+  title: "Dashboard | FiscLink",
   description: "Gestisci le tue fatture elettroniche automatiche",
 };
 
@@ -16,13 +16,14 @@ export default function DashboardLayout({
       <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-30 hidden md:block">
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
           <span className="text-lg font-bold text-gray-900">
-            ⚡ Connettore Fiscale
+            ⚡ FiscLink
           </span>
         </div>
         <nav className="p-4 space-y-1">
           <NavItem href="/dashboard" icon="📊" label="Dashboard" />
           <NavItem href="/dashboard/invoices" icon="📄" label="Fatture" />
           <NavItem href="/dashboard/customers" icon="👥" label="Clienti" />
+          <NavItem href="/dashboard/reports" icon="📈" label="Report" />
           <NavItem href="/dashboard/activity" icon="📋" label="Attività" />
           <div className="pt-4 mt-4 border-t border-gray-200">
             <NavItem

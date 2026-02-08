@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
 
   await getResend().emails.send({
     from:
-      process.env.EMAIL_FROM || "Connettore Fiscale <noreply@connettore.it>",
+      process.env.EMAIL_FROM || "FiscLink <noreply@fisclink.it>",
     to: normalizedEmail,
-    subject: "Accedi a Connettore Fiscale",
+    subject: "Accedi a FiscLink",
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #1e40af;">Connettore Fiscale</h2>
+        <h2 style="color: #1e40af;">FiscLink</h2>
         <p>Clicca il pulsante per accedere alla tua dashboard:</p>
         <a href="${loginUrl}" 
            style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">

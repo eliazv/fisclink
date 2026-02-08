@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title:
-    "Connettore Fiscale – Fatturazione elettronica automatica da Stripe e Shopify",
+    "FiscLink – Fatturazione elettronica automatica da Stripe e Shopify",
   description:
     "Trasforma ogni pagamento Stripe in una fattura elettronica SDI. Magic Link per raccogliere codice fiscale e P.IVA. Bollo automatico per forfettari. Prova gratis.",
   alternates: { canonical: "/" },
@@ -16,7 +16,7 @@ export default function Home() {
       <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="text-lg font-bold text-gray-900">
-            ⚡ Connettore Fiscale
+            ⚡ FiscLink
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
             <a href="#problemi" className="hover:text-gray-900 transition">
@@ -450,7 +450,7 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <p className="font-bold text-gray-900 mb-3">
-                ⚡ Connettore Fiscale
+                ⚡ FiscLink
               </p>
               <p className="text-sm text-gray-500 leading-relaxed">
                 Fatturazione elettronica automatica per PMI italiane che usano
@@ -524,7 +524,7 @@ export default function Home() {
           </div>
           <div className="border-t border-gray-100 mt-8 pt-8 text-center text-sm text-gray-400">
             <p>
-              © {new Date().getFullYear()} Connettore Fiscale. Fatturazione
+              © {new Date().getFullYear()} FiscLink. Fatturazione
               elettronica automatica per l&apos;Italia.
             </p>
           </div>

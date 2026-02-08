@@ -2,7 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const PUBLIC_PATHS = ["/", "/api/webhooks/stripe", "/api/magic-link", "/magic"];
+const PUBLIC_PATHS = [
+  "/",
+  "/api/webhooks/stripe",
+  "/api/webhooks/shopify",
+  "/api/webhooks/woocommerce",
+  "/api/webhooks/paypal",
+  "/api/magic-link",
+  "/magic",
+  "/api/accountant",
+  "/accountant",
+];
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(

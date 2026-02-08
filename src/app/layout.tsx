@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default:
-      "Connettore Fiscale – Fatturazione elettronica automatica da Stripe",
-    template: "%s | Connettore Fiscale",
+      "FiscLink – Fatturazione elettronica automatica da Stripe",
+    template: "%s | FiscLink",
   },
   description:
     "Trasforma ogni pagamento Stripe in una fattura elettronica a norma SDI. Magic Link per raccogliere dati fiscali, bollo automatico, regime forfettario. Per PMI italiane.",
@@ -33,17 +33,17 @@ export const metadata: Metadata = {
     "bollo virtuale automatico",
     "Magic Link dati fiscali",
   ],
-  authors: [{ name: "Connettore Fiscale" }],
-  creator: "Connettore Fiscale",
+  authors: [{ name: "FiscLink" }],
+  creator: "FiscLink",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL || "https://connettore-fiscale.it",
+    process.env.NEXT_PUBLIC_APP_URL || "https://fisclink.it",
   ),
   openGraph: {
     type: "website",
     locale: "it_IT",
     url: "/",
-    siteName: "Connettore Fiscale",
-    title: "Connettore Fiscale – Fatturazione elettronica automatica da Stripe",
+    siteName: "FiscLink",
+    title: "FiscLink – Fatturazione elettronica automatica da Stripe",
     description:
       "Smetti di rincorrere i clienti per il Codice Fiscale. Ogni pagamento Stripe diventa fattura SDI in automatico.",
     images: [
@@ -51,13 +51,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Connettore Fiscale – Fatturazione automatica",
+        alt: "FiscLink – Fatturazione automatica",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Connettore Fiscale – Fattura elettronica da Stripe in automatico",
+    title: "FiscLink – Fattura elettronica da Stripe in automatico",
     description:
       "Collega Stripe a Fatture in Cloud. Magic Link per dati fiscali mancanti. Bollo calcolato. SDI inviata.",
   },
@@ -92,7 +92,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
-              name: "Connettore Fiscale",
+              name: "FiscLink",
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
               description:

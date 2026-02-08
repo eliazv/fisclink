@@ -1,5 +1,5 @@
-// Connettore Fiscale - Database Schema
-// Middleware SaaS: Stripe/Shopify → Fatturazione Elettronica Italia
+// FiscLink - Database Schema
+// Middleware SaaS: Stripe/Shopify/WooCommerce/PayPal → Fatturazione Elettronica Italia
 
 generator client {
   provider = "prisma-client-js"
@@ -33,6 +33,17 @@ model Merchant {
   ficApiKeyEnc           String?  // Fatture in Cloud
   ficCompanyId           String?
 
+  // Shopify API keys cifrate
+  shopifyApiKeyEnc           String?
+  shopifyWebhookSecretEnc    String?
+  shopifyShopDomain          String?
+
+  // WooCommerce API keys cifrate
+  wooCommerceConsumerKeyEnc    String?
+  wooCommerceConsumerSecretEnc String?
+  wooCommerceStoreUrl          String?
+  wooCommerceWebhookSecretEnc  String?
+
   // Branding per Magic Link
   logoUrl    String?
   brandColor String? @default("#2563eb")
@@ -52,6 +63,7 @@ model Merchant {
   subscription Subscription?
   taxMappings  TaxMapping[]
   creditNotes  CreditNote[]
+  accountantAccesses AccountantAccess[]
 
   @@map("merchants")
 }
@@ -158,6 +170,13 @@ model Invoice {
   auditLogs  AuditLog[]
   creditNotes CreditNote[]
 
+  // OSS / vendite estere
+  ossApplicable    Boolean @default(false)
+  customerCountry  String? // Codice paese cliente ISO 2
+  saleType         String? // DOMESTIC, EU_B2B, EU_B2C_OSS, EXTRA_EU
+  ossVatRate       Decimal? @db.Decimal(5, 2) // Aliquota IVA paese destinazione
+  ossNote          String?  // Dicitura obbligatoria per vendite estere
+
   @@unique([merchantId, sourceType, sourceId]) // Idempotenza!
   @@index([status])
   @@index([merchantId, createdAt])
@@ -167,6 +186,8 @@ model Invoice {
 enum SourceType {
   STRIPE
   SHOPIFY
+  WOOCOMMERCE
+  PAYPAL
 }
 
 enum InvoiceStatus {
@@ -381,4 +402,34 @@ model LoginToken {
 
   @@index([token])
   @@map("login_tokens")
+}
+
+// ============================================================
+// ACCOUNTANT ACCESS (accesso read-only commercialista)
+// ============================================================
+model AccountantAccess {
+  id         String   @id @default(cuid())
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  email      String
+  name       String?
+  token      String   @unique  // Token di accesso univoco
+
+  // Permessi granulari
+  canViewInvoices    Boolean @default(true)
+  canViewStats       Boolean @default(true)
+  canDownloadReports Boolean @default(true)
+  canViewErrors      Boolean @default(true)
+
+  isActive     Boolean   @default(true)
+  lastAccessAt DateTime?
+  expiresAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([merchantId, email])
+  @@index([token])
+  @@map("accountant_access")
 }

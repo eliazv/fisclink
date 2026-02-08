@@ -21,7 +21,7 @@ const connection = new IORedis(
   },
 );
 
-console.log("🚀 Avvio worker Connettore Fiscale...");
+console.log("🚀 Avvio worker FiscLink...");
 
 // Worker: Processa fattura (valida dati → crea su FiC o Magic Link)
 const invoiceProcessWorker = new Worker(

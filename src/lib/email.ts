@@ -26,8 +26,8 @@ export async function sendMagicLinkEmail(
   params: MagicLinkEmailParams,
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const fromEmail = process.env.EMAIL_FROM ?? "noreply@connettore-fiscale.it";
-    const fromName = params.merchantName || "Connettore Fiscale";
+    const fromEmail = process.env.EMAIL_FROM ?? "noreply@fisclink.it";
+    const fromName = params.merchantName || "FiscLink";
 
     const { data, error } = await getResend().emails.send({
       from: `${fromName} <${fromEmail}>`,
@@ -55,8 +55,8 @@ export async function sendMagicLinkReminder(
   params: MagicLinkEmailParams & { reminderNumber: number },
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    const fromEmail = process.env.EMAIL_FROM ?? "noreply@connettore-fiscale.it";
-    const fromName = params.merchantName || "Connettore Fiscale";
+    const fromEmail = process.env.EMAIL_FROM ?? "noreply@fisclink.it";
+    const fromName = params.merchantName || "FiscLink";
 
     const { data, error } = await getResend().emails.send({
       from: `${fromName} <${fromEmail}>`,
@@ -137,7 +137,7 @@ function buildMagicLinkHtml(params: MagicLinkEmailParams): string {
     <tr>
       <td style="padding:16px 24px;background-color:#f9f9f9;border-top:1px solid #eee;">
         <p style="color:#999999;font-size:12px;margin:0;text-align:center;">
-          Questa email è stata inviata da ${params.merchantName} tramite Connettore Fiscale.<br/>
+          Questa email è stata inviata da ${params.merchantName} tramite FiscLink.<br/>
           Il link scadrà tra 7 giorni.
         </p>
       </td>
@@ -191,7 +191,7 @@ function buildReminderHtml(
     <tr>
       <td style="padding:16px 24px;background-color:#f9f9f9;border-top:1px solid #eee;">
         <p style="color:#999999;font-size:12px;margin:0;text-align:center;">
-          ${params.merchantName} tramite Connettore Fiscale
+          ${params.merchantName} tramite FiscLink
         </p>
       </td>
     </tr>

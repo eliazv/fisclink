@@ -1,7 +1,6 @@
 - nome app deve essere FiscLink
 
 - scrivi un file di contesto per ai furure che analizzeranno l'app.
-- fai anche landing page promozionale con seo ottimizzata
 - cosa manca per setup e completamento app? che serivzi devo configurare e collegare?
 - come testare il fuzionamento di tutto cio?
 - cosa manca per pubblicaizone di questa app?
@@ -14,3 +13,18 @@ Creare un .env locale e avviare PostgreSQL + Redis (usaimo docker direi(?))
 npx prisma migrate dev --name init per creare le tabelle
 Configurare un account Stripe test + webhook secret
 Configurare Resend per l'invio email (devo farlo io non tu)
+
+- Magic Link via WhatsApp (Twilio)
+
+- nome app deve essere FiscLink
+- Webhook multi-provider `/api/webhooks/[provider]`
+- Validazione VIES (P.IVA reale, non solo formato)
+- Accesso read-only commercialista
+- Supporto vendite estere / OSS
+- WooCommerce plugin
+- Shopify integrazione + App Store
+- Report PDF mensili
+- leggi docs\analisi-v2.md, verifica il funzionamento del tutto, integra con tutti i servizi necessari
+
+- integrazione con pagamenti paypal o lemon squeeze è da fare?
+- devo creare quali servizi? db supabase? account di quali servizi? docs\TODO.md?
