@@ -6,38 +6,59 @@
 
 import { EU_COUNTRIES, isEUCountry } from "./validators/vies";
 
-export type SaleType = 
-  | "DOMESTIC"           // Vendita Italia → Italia
-  | "EU_B2B"             // Vendita Italia → UE con P.IVA (reverse charge)
-  | "EU_B2C_OSS"         // Vendita Italia → UE privato (regime OSS)
-  | "EXTRA_EU"           // Vendita extra-UE (non soggetta IVA IT)
-  | "EXTRA_EU_B2B";      // Vendita extra-UE B2B
+export type SaleType =
+  | "DOMESTIC" // Vendita Italia → Italia
+  | "EU_B2B" // Vendita Italia → UE con P.IVA (reverse charge)
+  | "EU_B2C_OSS" // Vendita Italia → UE privato (regime OSS)
+  | "EXTRA_EU" // Vendita extra-UE (non soggetta IVA IT)
+  | "EXTRA_EU_B2B"; // Vendita extra-UE B2B
 
 export interface OSSClassification {
   saleType: SaleType;
   applyItalianVat: boolean;
   applyDestinationVat: boolean;
-  vatRate: number | null;         // Aliquota IVA da applicare
-  vatNature: string | null;       // Natura IVA per FiC/SDI
-  sendToSDI: boolean;             // Se creare fattura elettronica SDI
+  vatRate: number | null; // Aliquota IVA da applicare
+  vatNature: string | null; // Natura IVA per FiC/SDI
+  sendToSDI: boolean; // Se creare fattura elettronica SDI
   notes: string;
-  ossReportable: boolean;         // Se includere nel report OSS
+  ossReportable: boolean; // Se includere nel report OSS
 }
 
 // Aliquote IVA standard per paese UE (aggiornate 2025)
 export const EU_VAT_RATES: Record<string, number> = {
-  AT: 20,  BE: 21,  BG: 20,  HR: 25,  CY: 19,
-  CZ: 21,  DK: 25,  EE: 22,  FI: 25.5, FR: 20,
-  DE: 19,  GR: 24,  HU: 27,  IE: 23,  IT: 22,
-  LV: 21,  LT: 21,  LU: 17,  MT: 18,  NL: 21,
-  PL: 23,  PT: 23,  RO: 19,  SK: 20,  SI: 22,
-  ES: 21,  SE: 25,
+  AT: 20,
+  BE: 21,
+  BG: 20,
+  HR: 25,
+  CY: 19,
+  CZ: 21,
+  DK: 25,
+  EE: 22,
+  FI: 25.5,
+  FR: 20,
+  DE: 19,
+  GR: 24,
+  HU: 27,
+  IE: 23,
+  IT: 22,
+  LV: 21,
+  LT: 21,
+  LU: 17,
+  MT: 18,
+  NL: 21,
+  PL: 23,
+  PT: 23,
+  RO: 19,
+  SK: 20,
+  SI: 22,
+  ES: 21,
+  SE: 25,
 };
 
 /**
  * Classifica una vendita in base al paese destinazione e tipo cliente.
  * Determina il trattamento IVA corretto e se serve fattura SDI.
- * 
+ *
  * @param merchantCountry - Paese del merchant (tipicamente "IT")
  * @param customerCountry - Paese del cliente
  * @param isB2B - Se il cliente ha P.IVA (B2B) o è privato (B2C)
@@ -51,7 +72,8 @@ export function classifySale(
 ): OSSClassification {
   const mc = merchantCountry.toUpperCase();
   const cc = customerCountry.toUpperCase();
-  const isForfettario = merchantTaxRegime === "RF19" || merchantTaxRegime === "RF04";
+  const isForfettario =
+    merchantTaxRegime === "RF19" || merchantTaxRegime === "RF04";
 
   // 1. Vendita domestica (Italia → Italia)
   if (mc === cc) {
@@ -62,8 +84,8 @@ export function classifySale(
       vatRate: isForfettario ? 0 : 22,
       vatNature: isForfettario ? "N2.2" : null,
       sendToSDI: true,
-      notes: isForfettario 
-        ? "Vendita domestica - Regime forfettario, IVA non applicata" 
+      notes: isForfettario
+        ? "Vendita domestica - Regime forfettario, IVA non applicata"
         : "Vendita domestica - IVA 22% standard",
       ossReportable: false,
     };
@@ -77,7 +99,7 @@ export function classifySale(
       applyDestinationVat: false,
       vatRate: 0,
       vatNature: "N3.2", // Non imponibile - cessione intracomunitaria
-      sendToSDI: true,    // Va comunque inviata allo SDI
+      sendToSDI: true, // Va comunque inviata allo SDI
       notes: `Vendita intra-UE B2B verso ${cc} - Reverse charge art. 41 DL 331/93`,
       ossReportable: false,
     };
@@ -86,7 +108,7 @@ export function classifySale(
   // 3. Vendita intra-UE B2C (regime OSS)
   if (isEUCountry(cc) && !isB2B) {
     const destVatRate = EU_VAT_RATES[cc] || 22;
-    
+
     if (isForfettario) {
       // I forfettari NON applicano OSS (non hanno obbligo IVA)
       return {
@@ -150,8 +172,14 @@ export function calculateOSSReport(
     amount: number;
     vatRate: number;
   }>,
-): Record<string, { totalNet: number; totalVat: number; vatRate: number; count: number }> {
-  const report: Record<string, { totalNet: number; totalVat: number; vatRate: number; count: number }> = {};
+): Record<
+  string,
+  { totalNet: number; totalVat: number; vatRate: number; count: number }
+> {
+  const report: Record<
+    string,
+    { totalNet: number; totalVat: number; vatRate: number; count: number }
+  > = {};
 
   for (const tx of transactions) {
     const cc = tx.customerCountry.toUpperCase();

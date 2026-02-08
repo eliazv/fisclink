@@ -15,9 +15,7 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-30 hidden md:block">
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <span className="text-lg font-bold text-gray-900">
-            ⚡ FiscLink
-          </span>
+          <span className="text-lg font-bold text-gray-900">⚡ FiscLink</span>
         </div>
         <nav className="p-4 space-y-1">
           <NavItem href="/dashboard" icon="📊" label="Dashboard" />

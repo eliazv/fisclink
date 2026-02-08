@@ -53,7 +53,11 @@ export interface WebhookResult {
 
 export interface ProviderHandler {
   /** Verifica la firma del webhook */
-  verifySignature(req: NextRequest, body: string, secret: string): Promise<boolean>;
+  verifySignature(
+    req: NextRequest,
+    body: string,
+    secret: string,
+  ): Promise<boolean>;
   /** Processa il webhook e restituisce dati normalizzati */
   processWebhook(req: NextRequest, body: string): Promise<WebhookResult>;
 }
@@ -61,15 +65,24 @@ export interface ProviderHandler {
 /**
  * Verifica se un provider è supportato
  */
-export function isSupportedProvider(provider: string): provider is ProviderType {
-  return ["stripe", "shopify", "woocommerce", "paypal"].includes(provider.toLowerCase());
+export function isSupportedProvider(
+  provider: string,
+): provider is ProviderType {
+  return ["stripe", "shopify", "woocommerce", "paypal"].includes(
+    provider.toLowerCase(),
+  );
 }
 
 /**
  * Mappa il tipo provider al SourceType del DB
  */
-export function providerToSourceType(provider: ProviderType): "STRIPE" | "SHOPIFY" | "WOOCOMMERCE" | "PAYPAL" {
-  const map: Record<ProviderType, "STRIPE" | "SHOPIFY" | "WOOCOMMERCE" | "PAYPAL"> = {
+export function providerToSourceType(
+  provider: ProviderType,
+): "STRIPE" | "SHOPIFY" | "WOOCOMMERCE" | "PAYPAL" {
+  const map: Record<
+    ProviderType,
+    "STRIPE" | "SHOPIFY" | "WOOCOMMERCE" | "PAYPAL"
+  > = {
     stripe: "STRIPE",
     shopify: "SHOPIFY",
     woocommerce: "WOOCOMMERCE",

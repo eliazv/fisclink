@@ -7,9 +7,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { isSupportedProvider } from "@/lib/providers";
-import { verifyStripeWebhook, extractOrderFromCheckoutSession, extractOrderFromPaymentIntent } from "@/lib/stripe/client";
-import { verifyShopifyWebhook, extractOrderFromShopifyWebhook } from "@/lib/shopify/client";
-import { verifyWooCommerceWebhook, extractOrderFromWooCommerceWebhook } from "@/lib/woocommerce/client";
+import {
+  verifyStripeWebhook,
+  extractOrderFromCheckoutSession,
+  extractOrderFromPaymentIntent,
+} from "@/lib/stripe/client";
+import {
+  verifyShopifyWebhook,
+  extractOrderFromShopifyWebhook,
+} from "@/lib/shopify/client";
+import {
+  verifyWooCommerceWebhook,
+  extractOrderFromWooCommerceWebhook,
+} from "@/lib/woocommerce/client";
 import { decryptApiKey } from "@/lib/crypto";
 import { enqueueInvoiceProcess, enqueueRefundProcess } from "@/lib/queue";
 import type { SourceType } from "@prisma/client";
@@ -22,7 +32,9 @@ export async function POST(
 
   if (!isSupportedProvider(provider)) {
     return NextResponse.json(
-      { error: `Provider '${provider}' non supportato. Supportati: stripe, shopify, woocommerce, paypal` },
+      {
+        error: `Provider '${provider}' non supportato. Supportati: stripe, shopify, woocommerce, paypal`,
+      },
       { status: 400 },
     );
   }
@@ -43,7 +55,10 @@ export async function POST(
           { status: 501 },
         );
       default:
-        return NextResponse.json({ error: "Provider sconosciuto" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Provider sconosciuto" },
+          { status: 400 },
+        );
     }
   } catch (error) {
     console.error(`Webhook ${provider} error:`, error);
@@ -68,7 +83,9 @@ async function handleStripeWebhook(req: NextRequest, body: string) {
 
   for (const merchant of merchants) {
     try {
-      const webhookSecret = await decryptApiKey(merchant.stripeWebhookSecretEnc!);
+      const webhookSecret = await decryptApiKey(
+        merchant.stripeWebhookSecretEnc!,
+      );
       const sig = req.headers.get("stripe-signature");
       if (!sig) continue;
 
@@ -78,29 +95,45 @@ async function handleStripeWebhook(req: NextRequest, body: string) {
       // Evento verificato per questo merchant
       await processStripeEvent(event, merchant.id);
 
-      return NextResponse.json({ received: true, provider: "stripe", merchantId: merchant.id });
+      return NextResponse.json({
+        received: true,
+        provider: "stripe",
+        merchantId: merchant.id,
+      });
     } catch {
       // Non è per questo merchant, prova il prossimo
       continue;
     }
   }
 
-  return NextResponse.json({ error: "Nessun merchant corrisponde" }, { status: 400 });
+  return NextResponse.json(
+    { error: "Nessun merchant corrisponde" },
+    { status: 400 },
+  );
 }
 
-async function processStripeEvent(event: { type: string; data: { object: Record<string, unknown> } }, merchantId: string) {
+async function processStripeEvent(
+  event: { type: string; data: { object: Record<string, unknown> } },
+  merchantId: string,
+) {
   const obj = event.data.object;
 
-  if (event.type === "checkout.session.completed" || event.type === "payment_intent.succeeded") {
-    const orderData = event.type === "checkout.session.completed"
-      ? extractOrderFromCheckoutSession(obj)
-      : extractOrderFromPaymentIntent(obj);
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "payment_intent.succeeded"
+  ) {
+    const orderData =
+      event.type === "checkout.session.completed"
+        ? extractOrderFromCheckoutSession(obj)
+        : extractOrderFromPaymentIntent(obj);
 
     if (!orderData) return;
 
     // Upsert customer
     const customer = await prisma.customer.upsert({
-      where: { merchantId_email: { merchantId, email: orderData.customerEmail } },
+      where: {
+        merchantId_email: { merchantId, email: orderData.customerEmail },
+      },
       create: {
         merchantId,
         email: orderData.customerEmail,
@@ -123,19 +156,21 @@ async function processStripeEvent(event: { type: string; data: { object: Record<
     });
 
     // Create invoice (idempotent)
-    const invoice = await prisma.invoice.create({
-      data: {
-        merchantId,
-        customerId: customer.id,
-        sourceType: "STRIPE" as SourceType,
-        sourceId: orderData.sourceId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        description: orderData.description || `Ordine ${orderData.sourceId}`,
-        lineItems: orderData.lineItems as unknown as Record<string, unknown>,
-        status: "VALIDATING",
-      },
-    }).catch(() => null); // Ignora duplicati (idempotenza)
+    const invoice = await prisma.invoice
+      .create({
+        data: {
+          merchantId,
+          customerId: customer.id,
+          sourceType: "STRIPE" as SourceType,
+          sourceId: orderData.sourceId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          description: orderData.description || `Ordine ${orderData.sourceId}`,
+          lineItems: orderData.lineItems as unknown as Record<string, unknown>,
+          status: "VALIDATING",
+        },
+      })
+      .catch(() => null); // Ignora duplicati (idempotenza)
 
     if (invoice) {
       await enqueueInvoiceProcess(invoice.id);
@@ -165,7 +200,10 @@ async function handleShopifyWebhook(req: NextRequest, body: string) {
   const hmacHeader = req.headers.get("x-shopify-hmac-sha256");
 
   if (!shopDomain || !topic || !hmacHeader) {
-    return NextResponse.json({ error: "Header Shopify mancanti" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Header Shopify mancanti" },
+      { status: 400 },
+    );
   }
 
   // Trova merchant per domain
@@ -179,7 +217,11 @@ async function handleShopifyWebhook(req: NextRequest, body: string) {
     // Per ora: verifica se il merchant ha Shopify configurato
     // TODO: aggiungere shopifyWebhookSecretEnc al schema Merchant
     try {
-      const verified = verifyShopifyWebhook(body, hmacHeader, process.env.SHOPIFY_WEBHOOK_SECRET || "");
+      const verified = verifyShopifyWebhook(
+        body,
+        hmacHeader,
+        process.env.SHOPIFY_WEBHOOK_SECRET || "",
+      );
       if (!verified) continue;
 
       const payload = JSON.parse(body);
@@ -211,14 +253,20 @@ async function handleWooCommerceWebhook(req: NextRequest, body: string) {
   const topic = req.headers.get("x-wc-webhook-topic");
 
   if (!signature || !topic) {
-    return NextResponse.json({ error: "Header WooCommerce mancanti" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Header WooCommerce mancanti" },
+      { status: 400 },
+    );
   }
 
   // Verifica firma
   const webhookSecret = process.env.WOOCOMMERCE_WEBHOOK_SECRET || "";
   const verified = verifyWooCommerceWebhook(body, signature, webhookSecret);
   if (!verified) {
-    return NextResponse.json({ error: "Firma webhook non valida" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Firma webhook non valida" },
+      { status: 401 },
+    );
   }
 
   const payload = JSON.parse(body);
@@ -230,12 +278,19 @@ async function handleWooCommerceWebhook(req: NextRequest, body: string) {
   });
 
   if (!merchant) {
-    return NextResponse.json({ error: "Merchant non trovato" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Merchant non trovato" },
+      { status: 404 },
+    );
   }
 
   if (topic === "order.completed" || topic === "order.payment_complete") {
     const orderData = extractOrderFromWooCommerceWebhook(payload);
-    await processNormalizedOrder(merchant.id, "WOOCOMMERCE" as SourceType, orderData);
+    await processNormalizedOrder(
+      merchant.id,
+      "WOOCOMMERCE" as SourceType,
+      orderData,
+    );
   }
 
   if (topic === "order.refunded") {
@@ -290,7 +345,11 @@ async function processNormalizedOrder(
       province: data.province,
       zipCode: data.zipCode,
       country: data.country,
-      customerType: data.vatNumber ? "BUSINESS" : (data.country !== "IT" ? "FOREIGN" : "PRIVATE"),
+      customerType: data.vatNumber
+        ? "BUSINESS"
+        : data.country !== "IT"
+          ? "FOREIGN"
+          : "PRIVATE",
     },
     update: {
       name: data.customerName || undefined,
@@ -300,20 +359,22 @@ async function processNormalizedOrder(
   });
 
   // Create invoice (idempotent)
-  const invoice = await prisma.invoice.create({
-    data: {
-      merchantId,
-      customerId: customer.id,
-      sourceType,
-      sourceId: data.sourceId,
-      amount: data.amount,
-      currency: data.currency,
-      description: `Ordine ${data.sourceId}`,
-      lineItems: data.lineItems as unknown as Record<string, unknown>,
-      sourceData: data.metadata as Record<string, unknown>,
-      status: "VALIDATING",
-    },
-  }).catch(() => null);
+  const invoice = await prisma.invoice
+    .create({
+      data: {
+        merchantId,
+        customerId: customer.id,
+        sourceType,
+        sourceId: data.sourceId,
+        amount: data.amount,
+        currency: data.currency,
+        description: `Ordine ${data.sourceId}`,
+        lineItems: data.lineItems as unknown as Record<string, unknown>,
+        sourceData: data.metadata as Record<string, unknown>,
+        status: "VALIDATING",
+      },
+    })
+    .catch(() => null);
 
   if (invoice) {
     await enqueueInvoiceProcess(invoice.id);
@@ -347,12 +408,14 @@ async function processRefund(
     reason = data.reason as string | undefined;
   } else if (sourceType === "SHOPIFY") {
     refundId = `shopify_refund_${data.id}`;
-    refundAmount = parseFloat((data.transactions as Array<{ amount: string }>)?.[0]?.amount || "0");
+    refundAmount = parseFloat(
+      (data.transactions as Array<{ amount: string }>)?.[0]?.amount || "0",
+    );
     originalSourceId = `shopify_${data.order_id}`;
     reason = data.note as string | undefined;
   } else {
     refundId = `woo_refund_${data.id}`;
-    refundAmount = parseFloat(data.amount as string || "0");
+    refundAmount = parseFloat((data.amount as string) || "0");
     originalSourceId = `woo_${data.order_id || data.parent_id}`;
     reason = data.reason as string | undefined;
   }
@@ -363,23 +426,27 @@ async function processRefund(
   });
 
   if (!originalInvoice) {
-    console.warn(`Refund: fattura originale non trovata per ${originalSourceId}`);
+    console.warn(
+      `Refund: fattura originale non trovata per ${originalSourceId}`,
+    );
     return;
   }
 
   // Crea credit note (idempotent)
-  const creditNote = await prisma.creditNote.create({
-    data: {
-      merchantId,
-      originalInvoiceId: originalInvoice.id,
-      sourceType,
-      sourceRefundId: refundId,
-      amount: refundAmount,
-      currency: originalInvoice.currency,
-      reason,
-      status: "PENDING",
-    },
-  }).catch(() => null);
+  const creditNote = await prisma.creditNote
+    .create({
+      data: {
+        merchantId,
+        originalInvoiceId: originalInvoice.id,
+        sourceType,
+        sourceRefundId: refundId,
+        amount: refundAmount,
+        currency: originalInvoice.currency,
+        reason,
+        status: "PENDING",
+      },
+    })
+    .catch(() => null);
 
   if (creditNote) {
     await enqueueRefundProcess(creditNote.id);

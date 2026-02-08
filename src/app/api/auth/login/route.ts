@@ -49,8 +49,7 @@ export async function POST(req: NextRequest) {
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/verify?token=${token}`;
 
   await getResend().emails.send({
-    from:
-      process.env.EMAIL_FROM || "FiscLink <noreply@fisclink.it>",
+    from: process.env.EMAIL_FROM || "FiscLink <noreply@fisclink.it>",
     to: normalizedEmail,
     subject: "Accedi a FiscLink",
     html: `

@@ -2,8 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:
-    "FiscLink – Fatturazione elettronica automatica da Stripe e Shopify",
+  title: "FiscLink – Fatturazione elettronica automatica da Stripe e Shopify",
   description:
     "Trasforma ogni pagamento Stripe in una fattura elettronica SDI. Magic Link per raccogliere codice fiscale e P.IVA. Bollo automatico per forfettari. Prova gratis.",
   alternates: { canonical: "/" },
@@ -449,9 +448,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <p className="font-bold text-gray-900 mb-3">
-                ⚡ FiscLink
-              </p>
+              <p className="font-bold text-gray-900 mb-3">⚡ FiscLink</p>
               <p className="text-sm text-gray-500 leading-relaxed">
                 Fatturazione elettronica automatica per PMI italiane che usano
                 Stripe e Shopify.
@@ -524,8 +521,8 @@ export default function Home() {
           </div>
           <div className="border-t border-gray-100 mt-8 pt-8 text-center text-sm text-gray-400">
             <p>
-              © {new Date().getFullYear()} FiscLink. Fatturazione
-              elettronica automatica per l&apos;Italia.
+              © {new Date().getFullYear()} FiscLink. Fatturazione elettronica
+              automatica per l&apos;Italia.
             </p>
           </div>
         </div>

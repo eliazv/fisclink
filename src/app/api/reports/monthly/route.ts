@@ -4,11 +4,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { generateMonthlyReportPDF, type MonthlyReportData } from "@/lib/reports/pdf";
+import {
+  generateMonthlyReportPDF,
+  type MonthlyReportData,
+} from "@/lib/reports/pdf";
 
 export async function GET(req: NextRequest) {
   const merchantId = req.headers.get("x-merchant-id");
-  
+
   // Supporta anche token commercialista
   const accountantToken = req.headers.get("x-accountant-token");
   let resolvedMerchantId = merchantId;
@@ -46,7 +49,10 @@ export async function GET(req: NextRequest) {
   });
 
   if (!merchant) {
-    return NextResponse.json({ error: "Merchant non trovato" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Merchant non trovato" },
+      { status: 404 },
+    );
   }
 
   // Raccolta dati
@@ -103,10 +109,18 @@ export async function GET(req: NextRequest) {
   const ossInvoices = invoices.filter(
     (inv) => inv.customer?.country && inv.customer.country !== "IT",
   );
-  const ossGrouped = new Map<string, { count: number; totalNet: number; totalVat: number; vatRate: number }>();
+  const ossGrouped = new Map<
+    string,
+    { count: number; totalNet: number; totalVat: number; vatRate: number }
+  >();
   for (const inv of ossInvoices) {
     const cc = inv.customer?.country || "??";
-    const existing = ossGrouped.get(cc) || { count: 0, totalNet: 0, totalVat: 0, vatRate: Number(inv.vatRate || 0) };
+    const existing = ossGrouped.get(cc) || {
+      count: 0,
+      totalNet: 0,
+      totalVat: 0,
+      vatRate: Number(inv.vatRate || 0),
+    };
     existing.count += 1;
     existing.totalNet += Number(inv.amount);
     existing.totalVat += (Number(inv.vatRate || 0) / 100) * Number(inv.amount);
@@ -121,8 +135,12 @@ export async function GET(req: NextRequest) {
     totalInvoices: invoices.length,
     totalAccepted: countByStatus("ACCEPTED"),
     totalRejected: countByStatus("REJECTED"),
-    totalPending: countByStatus("PENDING_DATA") + countByStatus("VALIDATING") +
-      countByStatus("READY") + countByStatus("SENDING") + countByStatus("SENT"),
+    totalPending:
+      countByStatus("PENDING_DATA") +
+      countByStatus("VALIDATING") +
+      countByStatus("READY") +
+      countByStatus("SENDING") +
+      countByStatus("SENT"),
     totalErrors: countByStatus("ERROR") + countByStatus("FAILED"),
     totalCreditNotes: creditNotes.length,
     totalRevenue,
@@ -135,16 +153,33 @@ export async function GET(req: NextRequest) {
       .filter((inv) => inv.status === "ACCEPTED")
       .reduce((sum, inv) => sum + Number(inv.amount), 0),
     reconciliationStatus:
-      Math.abs(totalRevenue - invoices.filter((inv) => inv.status === "ACCEPTED").reduce((s, i) => s + Number(i.amount), 0)) < 1
+      Math.abs(
+        totalRevenue -
+          invoices
+            .filter((inv) => inv.status === "ACCEPTED")
+            .reduce((s, i) => s + Number(i.amount), 0),
+      ) < 1
         ? "MATCH"
-        : Math.abs(totalRevenue - invoices.filter((inv) => inv.status === "ACCEPTED").reduce((s, i) => s + Number(i.amount), 0)) < totalRevenue * 0.05
+        : Math.abs(
+              totalRevenue -
+                invoices
+                  .filter((inv) => inv.status === "ACCEPTED")
+                  .reduce((s, i) => s + Number(i.amount), 0),
+            ) <
+            totalRevenue * 0.05
           ? "WARNING"
           : "MISMATCH",
-    gap: totalRevenue - invoices.filter((inv) => inv.status === "ACCEPTED").reduce((s, i) => s + Number(i.amount), 0),
-    ossTransactions: Array.from(ossGrouped.entries()).map(([country, data]) => ({
-      country,
-      ...data,
-    })),
+    gap:
+      totalRevenue -
+      invoices
+        .filter((inv) => inv.status === "ACCEPTED")
+        .reduce((s, i) => s + Number(i.amount), 0),
+    ossTransactions: Array.from(ossGrouped.entries()).map(
+      ([country, data]) => ({
+        country,
+        ...data,
+      }),
+    ),
     invoices: invoices.map((inv) => ({
       number: inv.invoiceNumber || "-",
       date: inv.createdAt.toLocaleDateString("it-IT"),

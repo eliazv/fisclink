@@ -15,7 +15,7 @@ export interface ViesValidationResult {
 /**
  * Verifica una Partita IVA nel registro VIES dell'UE.
  * Utilizza l'API REST ufficiale della Commissione Europea.
- * 
+ *
  * @param countryCode - Codice paese ISO 2 lettere (es. "IT", "DE", "FR")
  * @param vatNumber - Numero P.IVA senza prefisso paese
  * @returns Risultato validazione con dati aziendali se disponibili
@@ -64,7 +64,9 @@ export async function validateVatVIES(
 
     if (!response.ok) {
       // Fallback: se VIES è down, permettiamo la validazione solo formale
-      console.warn(`VIES API returned ${response.status}, falling back to format-only validation`);
+      console.warn(
+        `VIES API returned ${response.status}, falling back to format-only validation`,
+      );
       return {
         valid: true, // Fail-open: non blocchiamo per problemi VIES
         countryCode: cc,
@@ -126,9 +128,33 @@ export async function validateItalianVat(
 
 // Lista paesi UE per validazione OSS
 export const EU_COUNTRIES = new Set([
-  "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR",
-  "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL",
-  "PL", "PT", "RO", "SK", "SI", "ES", "SE",
+  "AT",
+  "BE",
+  "BG",
+  "HR",
+  "CY",
+  "CZ",
+  "DK",
+  "EE",
+  "FI",
+  "FR",
+  "DE",
+  "GR",
+  "HU",
+  "IE",
+  "IT",
+  "LV",
+  "LT",
+  "LU",
+  "MT",
+  "NL",
+  "PL",
+  "PT",
+  "RO",
+  "SK",
+  "SI",
+  "ES",
+  "SE",
 ]);
 
 /**

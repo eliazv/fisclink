@@ -20,7 +20,9 @@ export async function checkSDIStatus() {
     take: 50,
   });
 
-  console.log(`[CRON] Controllo stato SDI per ${pendingInvoices.length} fatture...`);
+  console.log(
+    `[CRON] Controllo stato SDI per ${pendingInvoices.length} fatture...`,
+  );
 
   for (const invoice of pendingInvoices) {
     try {
@@ -66,7 +68,9 @@ export async function sendPendingReminders() {
     if (shouldRemind && now - lastReminderMs > ONE_DAY) {
       try {
         await enqueueMagicLinkReminder(link.id);
-        console.log(`[CRON] Reminder ${link.reminderCount + 1} inviato per magic link ${link.id}`);
+        console.log(
+          `[CRON] Reminder ${link.reminderCount + 1} inviato per magic link ${link.id}`,
+        );
       } catch (error) {
         console.error(`[CRON] Errore reminder per ${link.id}:`, error);
       }
@@ -138,7 +142,9 @@ export async function retryFailedInvoices() {
       // Re-enqueue usando la funzione importata
       const { enqueueInvoiceProcess } = await import("@/lib/queue");
       await enqueueInvoiceProcess(invoice.id);
-      console.log(`[CRON] Retry fattura ${invoice.id} (tentativo ${invoice.retryCount + 1})`);
+      console.log(
+        `[CRON] Retry fattura ${invoice.id} (tentativo ${invoice.retryCount + 1})`,
+      );
     } catch (error) {
       console.error(`[CRON] Errore retry fattura ${invoice.id}:`, error);
     }

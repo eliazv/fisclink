@@ -113,9 +113,15 @@ export class WooCommerceClient {
   /**
    * Verifica la connessione WooCommerce
    */
-  async verifyConnection(): Promise<{ success: boolean; storeName?: string; error?: string }> {
+  async verifyConnection(): Promise<{
+    success: boolean;
+    storeName?: string;
+    error?: string;
+  }> {
     try {
-      const data = await this.request<{ name: string }>(`/wp-json/wc/v3/system_status`);
+      const data = await this.request<{ name: string }>(
+        `/wp-json/wc/v3/system_status`,
+      );
       return { success: true, storeName: data?.name };
     } catch (error) {
       return {
@@ -159,10 +165,14 @@ export function verifyWooCommerceWebhook(
     .update(payload, "utf8")
     .digest("base64");
 
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature),
-  );
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature),
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -175,9 +185,7 @@ export function extractOrderFromWooCommerceWebhook(payload: WooCommerceOrder) {
   const meta = payload.meta_data || [];
   const findMeta = (keys: string[]): string | null => {
     for (const key of keys) {
-      const found = meta.find(
-        (m) => m.key.toLowerCase() === key.toLowerCase(),
-      );
+      const found = meta.find((m) => m.key.toLowerCase() === key.toLowerCase());
       if (found?.value) return found.value;
     }
     return null;

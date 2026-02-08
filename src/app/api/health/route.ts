@@ -7,7 +7,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
 export async function GET() {
-  const checks: Record<string, { status: string; latency?: number; error?: string }> = {};
+  const checks: Record<
+    string,
+    { status: string; latency?: number; error?: string }
+  > = {};
 
   // Check Database
   const dbStart = Date.now();
@@ -26,10 +29,13 @@ export async function GET() {
   const redisStart = Date.now();
   try {
     const IORedis = await import("ioredis");
-    const redis = new IORedis.default(process.env.REDIS_URL || "redis://localhost:6379", {
-      connectTimeout: 3000,
-      maxRetriesPerRequest: 1,
-    });
+    const redis = new IORedis.default(
+      process.env.REDIS_URL || "redis://localhost:6379",
+      {
+        connectTimeout: 3000,
+        maxRetriesPerRequest: 1,
+      },
+    );
     await redis.ping();
     await redis.quit();
     checks.redis = { status: "ok", latency: Date.now() - redisStart };

@@ -122,7 +122,12 @@ export async function generateMonthlyReportPDF(
       drawKeyValue(doc, "IVA Totale", formatCurrency(data.totalVat));
       drawKeyValue(doc, "Bollo Virtuale", formatCurrency(data.totalBollo));
       drawKeyValue(doc, "Rimborsi", formatCurrency(data.totalRefunds));
-      drawKeyValue(doc, "Fatturato Netto", formatCurrency(data.netRevenue), true);
+      drawKeyValue(
+        doc,
+        "Fatturato Netto",
+        formatCurrency(data.netRevenue),
+        true,
+      );
 
       // === STATO FATTURE ===
       doc.moveDown(1.5);
@@ -152,7 +157,7 @@ export async function generateMonthlyReportPDF(
       drawKeyValue(doc, "Totale Stripe", formatCurrency(data.stripeTotal));
       drawKeyValue(doc, "Totale Fatturato", formatCurrency(data.ficTotal));
       drawKeyValue(doc, "Differenza", formatCurrency(data.gap));
-      
+
       const statusEmoji =
         data.reconciliationStatus === "MATCH"
           ? "✅ Allineato"
@@ -279,8 +284,18 @@ function formatCurrency(amount: number): string {
 function formatPeriod(period: string): string {
   const [year, month] = period.split("-");
   const months = [
-    "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
-    "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre",
+    "Gennaio",
+    "Febbraio",
+    "Marzo",
+    "Aprile",
+    "Maggio",
+    "Giugno",
+    "Luglio",
+    "Agosto",
+    "Settembre",
+    "Ottobre",
+    "Novembre",
+    "Dicembre",
   ];
   return `${months[parseInt(month, 10) - 1]} ${year}`;
 }

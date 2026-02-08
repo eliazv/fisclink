@@ -23,7 +23,12 @@ interface InvoiceData {
   invoiceNumber: string | null;
   status: string;
   amount: number;
-  customer: { name: string; email: string; vatNumber: string | null; fiscalCode: string | null } | null;
+  customer: {
+    name: string;
+    email: string;
+    vatNumber: string | null;
+    fiscalCode: string | null;
+  } | null;
   sourceType: string;
   lastError: string | null;
   sentAt: string | null;
@@ -47,7 +52,9 @@ export default function AccountantDashboard({
   params: Promise<{ token: string }>;
 }) {
   const [token, setToken] = useState<string>("");
-  const [view, setView] = useState<"overview" | "invoices" | "errors">("overview");
+  const [view, setView] = useState<"overview" | "invoices" | "errors">(
+    "overview",
+  );
   const [overview, setOverview] = useState<OverviewData | null>(null);
   const [invoices, setInvoices] = useState<InvoiceData[]>([]);
   const [errors, setErrors] = useState<ErrorData[]>([]);
@@ -91,7 +98,9 @@ export default function AccountantDashboard({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-white rounded-xl p-8 shadow-sm border border-red-200 max-w-md">
-          <h1 className="text-xl font-bold text-red-600 mb-2">Accesso Negato</h1>
+          <h1 className="text-xl font-bold text-red-600 mb-2">
+            Accesso Negato
+          </h1>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
@@ -131,7 +140,11 @@ export default function AccountantDashboard({
                     : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-200"
                 }`}
               >
-                {v === "overview" ? "📊 Panoramica" : v === "invoices" ? "📄 Fatture" : "⚠️ Errori"}
+                {v === "overview"
+                  ? "📊 Panoramica"
+                  : v === "invoices"
+                    ? "📄 Fatture"
+                    : "⚠️ Errori"}
               </button>
             ))}
           </div>
@@ -163,10 +176,26 @@ export default function AccountantDashboard({
             {view === "overview" && overview && (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <KpiCard title="Fatture Totali" value={overview.overview.totalInvoices} color="blue" />
-                  <KpiCard title="Accettate SDI" value={overview.overview.accepted} color="green" />
-                  <KpiCard title="Rifiutate" value={overview.overview.rejected} color="red" />
-                  <KpiCard title="Errori" value={overview.overview.errors} color="amber" />
+                  <KpiCard
+                    title="Fatture Totali"
+                    value={overview.overview.totalInvoices}
+                    color="blue"
+                  />
+                  <KpiCard
+                    title="Accettate SDI"
+                    value={overview.overview.accepted}
+                    color="green"
+                  />
+                  <KpiCard
+                    title="Rifiutate"
+                    value={overview.overview.rejected}
+                    color="red"
+                  />
+                  <KpiCard
+                    title="Errori"
+                    value={overview.overview.errors}
+                    color="amber"
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <KpiCard
@@ -175,15 +204,40 @@ export default function AccountantDashboard({
                     color="blue"
                     large
                   />
-                  <KpiCard title="In Attesa" value={overview.overview.pending} color="yellow" large />
-                  <KpiCard title="Note di Credito" value={overview.overview.creditNotes} color="purple" large />
+                  <KpiCard
+                    title="In Attesa"
+                    value={overview.overview.pending}
+                    color="yellow"
+                    large
+                  />
+                  <KpiCard
+                    title="Note di Credito"
+                    value={overview.overview.creditNotes}
+                    color="purple"
+                    large
+                  />
                 </div>
                 <div className="bg-white rounded-xl p-6 border border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-500 mb-3">Informazioni Merchant</h3>
+                  <h3 className="text-sm font-semibold text-gray-500 mb-3">
+                    Informazioni Merchant
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-gray-400">Ragione sociale:</span> <span className="font-medium">{overview.merchantCompany || overview.merchantName}</span></div>
-                    <div><span className="text-gray-400">P.IVA:</span> <span className="font-medium">{overview.merchantVat || "N/D"}</span></div>
-                    <div><span className="text-gray-400">Regime:</span> <span className="font-medium">{overview.taxRegime}</span></div>
+                    <div>
+                      <span className="text-gray-400">Ragione sociale:</span>{" "}
+                      <span className="font-medium">
+                        {overview.merchantCompany || overview.merchantName}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">P.IVA:</span>{" "}
+                      <span className="font-medium">
+                        {overview.merchantVat || "N/D"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Regime:</span>{" "}
+                      <span className="font-medium">{overview.taxRegime}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -195,22 +249,44 @@ export default function AccountantDashboard({
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">N°</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Importo</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stato</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Provider</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        N°
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Importo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Stato
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Provider
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Data
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 font-mono text-xs">{inv.invoiceNumber || "—"}</td>
-                        <td className="px-4 py-3">{inv.customer?.name || inv.customer?.email || "—"}</td>
-                        <td className="px-4 py-3 font-medium">€ {Number(inv.amount).toFixed(2)}</td>
-                        <td className="px-4 py-3"><StatusBadge status={inv.status} /></td>
-                        <td className="px-4 py-3 text-xs text-gray-500">{inv.sourceType}</td>
+                        <td className="px-4 py-3 font-mono text-xs">
+                          {inv.invoiceNumber || "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {inv.customer?.name || inv.customer?.email || "—"}
+                        </td>
+                        <td className="px-4 py-3 font-medium">
+                          € {Number(inv.amount).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <StatusBadge status={inv.status} />
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500">
+                          {inv.sourceType}
+                        </td>
                         <td className="px-4 py-3 text-xs text-gray-500">
                           {new Date(inv.createdAt).toLocaleDateString("it-IT")}
                         </td>
@@ -218,7 +294,10 @@ export default function AccountantDashboard({
                     ))}
                     {invoices.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
+                        <td
+                          colSpan={6}
+                          className="px-4 py-12 text-center text-gray-400"
+                        >
                           Nessuna fattura per questo periodo
                         </td>
                       </tr>
@@ -233,11 +312,16 @@ export default function AccountantDashboard({
               <div className="space-y-3">
                 {errors.length === 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                    <p className="text-green-700 font-medium">✅ Nessun errore in questo periodo</p>
+                    <p className="text-green-700 font-medium">
+                      ✅ Nessun errore in questo periodo
+                    </p>
                   </div>
                 )}
                 {errors.map((err) => (
-                  <div key={err.id} className="bg-white rounded-xl border border-red-200 p-4">
+                  <div
+                    key={err.id}
+                    className="bg-white rounded-xl border border-red-200 p-4"
+                  >
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -247,7 +331,10 @@ export default function AccountantDashboard({
                           </span>
                         </div>
                         <p className="text-sm text-gray-500">
-                          {err.customer?.name || err.customer?.email || "Cliente sconosciuto"} — € {Number(err.amount).toFixed(2)}
+                          {err.customer?.name ||
+                            err.customer?.email ||
+                            "Cliente sconosciuto"}{" "}
+                          — € {Number(err.amount).toFixed(2)}
                         </p>
                       </div>
                       {err.errorCode && (
@@ -300,7 +387,9 @@ function KpiCard({
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
       <p className="text-xs font-medium text-gray-400 uppercase">{title}</p>
-      <p className={`${large ? "text-2xl" : "text-xl"} font-bold mt-1 ${colorMap[color] || ""}`}>
+      <p
+        className={`${large ? "text-2xl" : "text-xl"} font-bold mt-1 ${colorMap[color] || ""}`}
+      >
         {value}
       </p>
     </div>
@@ -309,21 +398,39 @@ function KpiCard({
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string; label: string }> = {
-    ACCEPTED: { bg: "bg-green-100", text: "text-green-700", label: "Accettata" },
+    ACCEPTED: {
+      bg: "bg-green-100",
+      text: "text-green-700",
+      label: "Accettata",
+    },
     SENT: { bg: "bg-blue-100", text: "text-blue-700", label: "Inviata" },
     SENDING: { bg: "bg-blue-50", text: "text-blue-600", label: "In invio" },
-    PENDING_DATA: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Dati mancanti" },
-    VALIDATING: { bg: "bg-indigo-100", text: "text-indigo-700", label: "Validazione" },
+    PENDING_DATA: {
+      bg: "bg-yellow-100",
+      text: "text-yellow-700",
+      label: "Dati mancanti",
+    },
+    VALIDATING: {
+      bg: "bg-indigo-100",
+      text: "text-indigo-700",
+      label: "Validazione",
+    },
     READY: { bg: "bg-cyan-100", text: "text-cyan-700", label: "Pronta" },
     REJECTED: { bg: "bg-red-100", text: "text-red-700", label: "Rifiutata" },
     ERROR: { bg: "bg-red-50", text: "text-red-600", label: "Errore" },
     FAILED: { bg: "bg-red-200", text: "text-red-800", label: "Fallita" },
   };
 
-  const c = config[status] || { bg: "bg-gray-100", text: "text-gray-600", label: status };
+  const c = config[status] || {
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+    label: status,
+  };
 
   return (
-    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
+    <span
+      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${c.bg} ${c.text}`}
+    >
       {c.label}
     </span>
   );

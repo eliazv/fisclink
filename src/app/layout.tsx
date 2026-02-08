@@ -14,8 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default:
-      "FiscLink – Fatturazione elettronica automatica da Stripe",
+    default: "FiscLink – Fatturazione elettronica automatica da Stripe",
     template: "%s | FiscLink",
   },
   description:

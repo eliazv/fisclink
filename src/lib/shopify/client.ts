@@ -5,14 +5,14 @@
 import crypto from "crypto";
 
 export interface ShopifyConfig {
-  shopDomain: string;      // es. "myshop.myshopify.com"
-  accessToken: string;     // Admin API access token
-  apiVersion?: string;     // es. "2025-01"
+  shopDomain: string; // es. "myshop.myshopify.com"
+  accessToken: string; // Admin API access token
+  apiVersion?: string; // es. "2025-01"
 }
 
 export interface ShopifyOrder {
   id: number;
-  name: string;                    // "#1001"
+  name: string; // "#1001"
   order_number: number;
   email: string;
   created_at: string;
@@ -153,7 +153,11 @@ export class ShopifyClient {
   /**
    * Verifica la connessione allo shop Shopify
    */
-  async verifyConnection(): Promise<{ success: boolean; shopName?: string; error?: string }> {
+  async verifyConnection(): Promise<{
+    success: boolean;
+    shopName?: string;
+    error?: string;
+  }> {
     try {
       const data = await this.request<{ shop: { name: string } }>("/shop.json");
       return { success: true, shopName: data.shop.name };
@@ -248,11 +252,7 @@ export function extractOrderFromShopifyWebhook(payload: ShopifyOrder) {
     "codice_destinatario",
   ]);
 
-  const pecEmail = findNote([
-    "pec",
-    "pec_email",
-    "PEC",
-  ]);
+  const pecEmail = findNote(["pec", "pec_email", "PEC"]);
 
   return {
     sourceId: `shopify_${payload.id}`,
@@ -273,10 +273,13 @@ export function extractOrderFromShopifyWebhook(payload: ShopifyOrder) {
     zipCode: billing?.zip || null,
     country: billing?.country_code || "IT",
     lineItems: payload.line_items.map((item) => ({
-      description: item.title + (item.variant_title ? ` - ${item.variant_title}` : ""),
+      description:
+        item.title + (item.variant_title ? ` - ${item.variant_title}` : ""),
       quantity: item.quantity,
       unitPrice: parseFloat(item.price),
-      totalPrice: parseFloat(item.price) * item.quantity - parseFloat(item.total_discount),
+      totalPrice:
+        parseFloat(item.price) * item.quantity -
+        parseFloat(item.total_discount),
       tax: item.tax_lines.reduce((sum, t) => sum + parseFloat(t.price), 0),
       sku: item.sku,
     })),

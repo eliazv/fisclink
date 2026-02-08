@@ -25,10 +25,7 @@ export async function GET(
   }
 
   if (access.expiresAt && access.expiresAt < new Date()) {
-    return NextResponse.json(
-      { error: "Accesso scaduto" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Accesso scaduto" }, { status: 403 });
   }
 
   // Aggiorna ultimo accesso
@@ -68,13 +65,27 @@ export async function GET(
         revenue,
       ] = await Promise.all([
         prisma.invoice.count({ where: { merchantId, ...dateFilter } }),
-        prisma.invoice.count({ where: { merchantId, status: "ACCEPTED", ...dateFilter } }),
-        prisma.invoice.count({ where: { merchantId, status: "REJECTED", ...dateFilter } }),
         prisma.invoice.count({
-          where: { merchantId, status: { in: ["PENDING_DATA", "VALIDATING", "READY", "SENDING", "SENT"] }, ...dateFilter },
+          where: { merchantId, status: "ACCEPTED", ...dateFilter },
         }),
         prisma.invoice.count({
-          where: { merchantId, status: { in: ["ERROR", "FAILED"] }, ...dateFilter },
+          where: { merchantId, status: "REJECTED", ...dateFilter },
+        }),
+        prisma.invoice.count({
+          where: {
+            merchantId,
+            status: {
+              in: ["PENDING_DATA", "VALIDATING", "READY", "SENDING", "SENT"],
+            },
+            ...dateFilter,
+          },
+        }),
+        prisma.invoice.count({
+          where: {
+            merchantId,
+            status: { in: ["ERROR", "FAILED"] },
+            ...dateFilter,
+          },
         }),
         prisma.creditNote.count({ where: { merchantId, ...dateFilter } }),
         prisma.invoice.aggregate({
@@ -102,7 +113,10 @@ export async function GET(
 
     case "invoices": {
       if (!access.canViewInvoices) {
-        return NextResponse.json({ error: "Permesso non concesso" }, { status: 403 });
+        return NextResponse.json(
+          { error: "Permesso non concesso" },
+          { status: 403 },
+        );
       }
 
       const page = parseInt(searchParams.get("page") || "1");
@@ -112,7 +126,16 @@ export async function GET(
       const [invoices, total] = await Promise.all([
         prisma.invoice.findMany({
           where: { merchantId, ...dateFilter },
-          include: { customer: { select: { name: true, email: true, vatNumber: true, fiscalCode: true } } },
+          include: {
+            customer: {
+              select: {
+                name: true,
+                email: true,
+                vatNumber: true,
+                fiscalCode: true,
+              },
+            },
+          },
           orderBy: { createdAt: "desc" },
           take: limit,
           skip,
@@ -147,7 +170,10 @@ export async function GET(
 
     case "errors": {
       if (!access.canViewErrors) {
-        return NextResponse.json({ error: "Permesso non concesso" }, { status: 403 });
+        return NextResponse.json(
+          { error: "Permesso non concesso" },
+          { status: 403 },
+        );
       }
 
       const errorInvoices = await prisma.invoice.findMany({
@@ -180,7 +206,10 @@ export async function GET(
 
     case "stats": {
       if (!access.canViewStats) {
-        return NextResponse.json({ error: "Permesso non concesso" }, { status: 403 });
+        return NextResponse.json(
+          { error: "Permesso non concesso" },
+          { status: 403 },
+        );
       }
 
       // Statistiche mensili ultimi 12 mesi

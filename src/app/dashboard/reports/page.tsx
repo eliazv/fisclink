@@ -8,7 +8,9 @@ export default function ReportsPage() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
   const [loading, setLoading] = useState(false);
-  const [reportData, setReportData] = useState<Record<string, unknown> | null>(null);
+  const [reportData, setReportData] = useState<Record<string, unknown> | null>(
+    null,
+  );
 
   async function loadReport() {
     setLoading(true);
@@ -39,7 +41,9 @@ export default function ReportsPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Periodo</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Periodo
+            </label>
             <input
               type="month"
               value={month}
@@ -97,38 +101,65 @@ export default function ReportsPage() {
 
             {/* Status Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <SummaryCard title="Totale Fatture" value={(reportData as Record<string, number>).totalInvoices} color="blue" />
-              <SummaryCard title="Accettate" value={(reportData as Record<string, number>).totalAccepted} color="green" />
-              <SummaryCard title="Rifiutate" value={(reportData as Record<string, number>).totalRejected} color="red" />
-              <SummaryCard title="Errori" value={(reportData as Record<string, number>).totalErrors} color="amber" />
+              <SummaryCard
+                title="Totale Fatture"
+                value={(reportData as Record<string, number>).totalInvoices}
+                color="blue"
+              />
+              <SummaryCard
+                title="Accettate"
+                value={(reportData as Record<string, number>).totalAccepted}
+                color="green"
+              />
+              <SummaryCard
+                title="Rifiutate"
+                value={(reportData as Record<string, number>).totalRejected}
+                color="red"
+              />
+              <SummaryCard
+                title="Errori"
+                value={(reportData as Record<string, number>).totalErrors}
+                color="amber"
+              />
             </div>
 
             {/* Reconciliation */}
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase">Riconciliazione</h3>
+              <h3 className="text-sm font-semibold text-gray-500 mb-4 uppercase">
+                Riconciliazione
+              </h3>
               <div className="grid grid-cols-3 gap-6">
                 <div>
                   <p className="text-xs text-gray-400">Totale Pagamenti</p>
                   <p className="text-xl font-bold text-gray-900">
-                    € {Number((reportData as Record<string, number>).stripeTotal || 0).toFixed(2)}
+                    €{" "}
+                    {Number(
+                      (reportData as Record<string, number>).stripeTotal || 0,
+                    ).toFixed(2)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Totale Fatturato SDI</p>
                   <p className="text-xl font-bold text-gray-900">
-                    € {Number((reportData as Record<string, number>).ficTotal || 0).toFixed(2)}
+                    €{" "}
+                    {Number(
+                      (reportData as Record<string, number>).ficTotal || 0,
+                    ).toFixed(2)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Stato</p>
                   <p className="text-xl font-bold">
-                    {(reportData as Record<string, string>).reconciliationStatus === "MATCH" && (
+                    {(reportData as Record<string, string>)
+                      .reconciliationStatus === "MATCH" && (
                       <span className="text-green-600">✅ Allineato</span>
                     )}
-                    {(reportData as Record<string, string>).reconciliationStatus === "WARNING" && (
+                    {(reportData as Record<string, string>)
+                      .reconciliationStatus === "WARNING" && (
                       <span className="text-amber-600">⚠️ Discrepanza</span>
                     )}
-                    {(reportData as Record<string, string>).reconciliationStatus === "MISMATCH" && (
+                    {(reportData as Record<string, string>)
+                      .reconciliationStatus === "MISMATCH" && (
                       <span className="text-red-600">❌ Disallineato</span>
                     )}
                   </p>
@@ -163,7 +194,9 @@ function SummaryCard({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <p className="text-xs text-gray-400">{title}</p>
-      <p className={`text-lg font-bold ${colorMap[color] || "text-gray-900"}`}>{value}</p>
+      <p className={`text-lg font-bold ${colorMap[color] || "text-gray-900"}`}>
+        {value}
+      </p>
     </div>
   );
 }
