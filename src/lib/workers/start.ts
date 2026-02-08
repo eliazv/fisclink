@@ -12,6 +12,7 @@ import {
   processMagicLinkSend,
   processMagicLinkReminder,
 } from "./magiclink.worker";
+import { processRefund } from "./refund.worker";
 
 const connection = new IORedis(
   process.env.REDIS_URL || "redis://localhost:6379",
@@ -84,12 +85,29 @@ const magicLinkReminderWorker = new Worker(
   },
 );
 
+// Worker: Processa rimborsi → Note di Credito
+const refundProcessWorker = new Worker(
+  "refund:process",
+  async (job) => {
+    console.log(
+      `💸 [refund:process] Job ${job.id} - CreditNote ${job.data.creditNoteId}`,
+    );
+    await processRefund(job.data);
+  },
+  {
+    connection,
+    concurrency: 3,
+    limiter: { max: 5, duration: 1000 },
+  },
+);
+
 // Event handlers comuni
 const workers = [
   { worker: invoiceProcessWorker, name: "invoice:process" },
   { worker: invoiceSendWorker, name: "invoice:send" },
   { worker: magicLinkSendWorker, name: "magiclink:send" },
   { worker: magicLinkReminderWorker, name: "magiclink:reminder" },
+  { worker: refundProcessWorker, name: "refund:process" },
 ];
 
 for (const { worker, name } of workers) {
@@ -107,10 +125,11 @@ for (const { worker, name } of workers) {
 }
 
 console.log("✅ Tutti i worker sono attivi:");
-console.log("   - invoice:process  (concurrency: 5)");
-console.log("   - invoice:send     (concurrency: 3)");
-console.log("   - magiclink:send   (concurrency: 5)");
+console.log("   - invoice:process    (concurrency: 5)");
+console.log("   - invoice:send       (concurrency: 3)");
+console.log("   - magiclink:send     (concurrency: 5)");
 console.log("   - magiclink:reminder (concurrency: 3)");
+console.log("   - refund:process     (concurrency: 3)");
 
 // Graceful shutdown
 const shutdown = async () => {

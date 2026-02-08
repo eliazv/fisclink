@@ -29,6 +29,7 @@ export const QUEUE_NAMES = {
   INVOICE_SEND: "invoice:send",
   MAGIC_LINK_SEND: "magiclink:send",
   MAGIC_LINK_REMINDER: "magiclink:reminder",
+  REFUND_PROCESS: "refund:process",
 } as const;
 
 // ============================================================
@@ -60,6 +61,14 @@ export interface MagicLinkReminderJobData {
   invoiceId: string;
   merchantId: string;
   reminderNumber: number;
+}
+
+export interface RefundProcessJobData {
+  creditNoteId: string;
+  merchantId: string;
+  originalInvoiceId: string;
+  stripeRefundId: string;
+  amount: number;
 }
 
 // ============================================================
@@ -121,6 +130,18 @@ export function getQueues() {
         },
       },
     ),
+    [QUEUE_NAMES.REFUND_PROCESS]: new Queue(QUEUE_NAMES.REFUND_PROCESS, {
+      connection,
+      defaultJobOptions: {
+        attempts: 5,
+        backoff: {
+          type: "exponential",
+          delay: 5000,
+        },
+        removeOnComplete: { count: 1000 },
+        removeOnFail: { count: 5000 },
+      },
+    }),
   };
 
   return _queues;
@@ -190,4 +211,18 @@ export async function scheduleMagicLinkReminder(
       jobId: `reminder:${data.magicLinkId}:${data.reminderNumber}`,
     },
   );
+}
+
+/**
+ * Accoda un job per processare un rimborso e creare una Nota di Credito.
+ */
+export async function enqueueRefundProcess(
+  data: RefundProcessJobData,
+): Promise<Job<RefundProcessJobData>> {
+  const queues = getQueues();
+  const queue = queues[QUEUE_NAMES.REFUND_PROCESS];
+
+  return queue.add(`refund-${data.stripeRefundId}`, data, {
+    jobId: `refund:${data.stripeRefundId}`,
+  });
 }

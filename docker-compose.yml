@@ -1,0 +1,42 @@
+# Docker Compose - Connettore Fiscale (Development)
+# Avvia: docker compose up -d
+# Ferma: docker compose down
+# Reset completo: docker compose down -v
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cf-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: connettore
+      POSTGRES_PASSWORD: connettore_dev_2026
+      POSTGRES_DB: connettore_fiscale
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U connettore -d connettore_fiscale"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: cf-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
+volumes:
+  pg_data:
+  redis_data:

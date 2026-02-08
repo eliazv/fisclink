@@ -49,6 +49,9 @@ model Merchant {
   auditLogs   AuditLog[]
   customers   Customer[]
   loginTokens LoginToken[]
+  subscription Subscription?
+  taxMappings  TaxMapping[]
+  creditNotes  CreditNote[]
 
   @@map("merchants")
 }
@@ -153,6 +156,7 @@ model Invoice {
 
   magicLinks MagicLink[]
   auditLogs  AuditLog[]
+  creditNotes CreditNote[]
 
   @@unique([merchantId, sourceType, sourceId]) // Idempotenza!
   @@index([status])
@@ -238,6 +242,128 @@ enum LogLevel {
   INFO
   WARN
   ERROR
+}
+
+// ============================================================
+// SUBSCRIPTION (piano SaaS del merchant)
+// ============================================================
+model Subscription {
+  id         String   @id @default(cuid())
+  merchantId String   @unique
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  plan        PlanType  @default(STARTER)
+  status      SubStatus @default(TRIAL)
+
+  // Limiti
+  invoiceLimit  Int       @default(50)   // Fatture/mese per piano
+  invoicesUsed  Int       @default(0)    // Conteggio corrente mese
+  resetAt       DateTime?                // Prossimo reset conteggio
+
+  // Stripe Billing (per pagare l'abbonamento a FiscLink)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+
+  trialEndsAt DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("subscriptions")
+}
+
+enum PlanType {
+  STARTER     // €15/mese - 50 fatture
+  PRO         // €29/mese - 500 fatture
+  ENTERPRISE  // €59/mese - illimitate
+}
+
+enum SubStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+// ============================================================
+// TAX MAPPING (mapping aliquote Stripe → FiC)
+// ============================================================
+model TaxMapping {
+  id         String   @id @default(cuid())
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  // Chiave: codice tax di Stripe o ID tax_rate
+  stripeTaxCode  String   // es. "txr_123" o "txcd_10000000"
+  stripeTaxLabel String?  // es. "IVA 22%"
+
+  // Valore: codice IVA in Fatture in Cloud
+  ficVatId       Int      // ID aliquota in FiC (es. 0 = esente, 22 = 22%)
+  ficVatRate     Decimal  @db.Decimal(5, 2) // Percentuale (es. 22.00)
+  ficVatNature   String?  // Natura IVA (N2.1, N2.2, N4, etc.)
+
+  isDefault Boolean @default(false) // Mapping predefinito se nessun match
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([merchantId, stripeTaxCode])
+  @@map("tax_mappings")
+}
+
+// ============================================================
+// CREDIT NOTE (note di credito per rimborsi)
+// ============================================================
+model CreditNote {
+  id         String   @id @default(cuid())
+  merchantId String
+  merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  // Fattura originale a cui si riferisce la NC
+  originalInvoiceId String
+  originalInvoice   Invoice @relation(fields: [originalInvoiceId], references: [id])
+
+  // Sorgente rimborso
+  sourceType     SourceType
+  sourceRefundId String        // Stripe refund ID (re_xxx)
+  sourceData     Json?
+
+  // Stato
+  status         CreditNoteStatus @default(PENDING)
+
+  // Importi
+  amount         Decimal  @db.Decimal(10, 2)
+  currency       String   @default("EUR")
+  reason         String?  // Motivo rimborso
+
+  // Fatture in Cloud
+  ficDocumentId  String?
+  sdiIdentifier  String?
+
+  // Errori
+  lastError      String?
+  retryCount     Int      @default(0)
+
+  sentAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([merchantId, sourceType, sourceRefundId])
+  @@index([status])
+  @@map("credit_notes")
+}
+
+enum CreditNoteStatus {
+  PENDING
+  CREATING
+  SENT
+  ACCEPTED
+  REJECTED
+  ERROR
+  FAILED
 }
 
 // ============================================================

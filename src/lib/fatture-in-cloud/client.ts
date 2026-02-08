@@ -225,6 +225,44 @@ export async function sendToSDI(
 }
 
 /**
+ * Crea una Nota di Credito (TD04) su Fatture in Cloud.
+ * Usata per i rimborsi automatici da Stripe.
+ */
+export async function createCreditNote(
+  merchantId: string,
+  payload: FicCreditNotePayload,
+): Promise<FicInvoiceResponse> {
+  const config = await getFicConfigForMerchant(merchantId);
+  if (!config) {
+    throw new Error(
+      "Configurazione Fatture in Cloud mancante per questo merchant",
+    );
+  }
+
+  return ficRequest<FicInvoiceResponse>(
+    config,
+    "POST",
+    `/c/${config.companyId}/issued_documents`,
+    payload,
+  );
+}
+
+export interface FicCreditNotePayload {
+  data: {
+    type: "credit_note";
+    entity: FicInvoicePayload["data"]["entity"];
+    date: string;
+    items_list: FicInvoiceItem[];
+    e_invoice?: boolean;
+    currency?: { id: string };
+    language?: { code: string };
+    notes?: string;
+    // Riferimento alla fattura originale
+    ei_raw?: Record<string, unknown>;
+  };
+}
+
+/**
  * Verifica lo stato di invio SDI di una fattura.
  */
 export async function getSDIStatus(

@@ -20,7 +20,7 @@ import {
   extractOrderFromPaymentIntent,
   type StripeOrderData,
 } from "@/lib/stripe/client";
-import { enqueueInvoiceProcess } from "@/lib/queue";
+import { enqueueInvoiceProcess, enqueueRefundProcess } from "@/lib/queue";
 
 export const runtime = "nodejs";
 
@@ -108,6 +108,11 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         orderData = extractOrderFromPaymentIntent(paymentIntent);
         break;
+      }
+
+      case "charge.refunded": {
+        const charge = event.data.object as Stripe.Charge;
+        return await handleRefund(charge, merchant.id);
       }
 
       default:
@@ -227,4 +232,113 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+// ============================================================
+// Handler Rimborsi → Nota di Credito
+// ============================================================
+
+async function handleRefund(
+  charge: Stripe.Charge,
+  merchantId: string,
+): Promise<NextResponse> {
+  const paymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+  if (!paymentIntentId) {
+    return NextResponse.json({
+      received: true,
+      handled: false,
+      note: "No payment_intent on charge",
+    });
+  }
+
+  // Trova la fattura originale per questo payment_intent
+  const originalInvoice = await prisma.invoice.findUnique({
+    where: {
+      merchantId_sourceType_sourceId: {
+        merchantId,
+        sourceType: "STRIPE",
+        sourceId: paymentIntentId,
+      },
+    },
+  });
+
+  if (!originalInvoice) {
+    return NextResponse.json({
+      received: true,
+      handled: false,
+      note: "No matching invoice for refund",
+    });
+  }
+
+  // Processa ogni refund sulla charge
+  const refunds = charge.refunds?.data ?? [];
+  const results: string[] = [];
+
+  for (const refund of refunds) {
+    // Idempotenza: controlla se la credit note esiste già
+    const existing = await prisma.creditNote.findUnique({
+      where: {
+        merchantId_sourceType_sourceRefundId: {
+          merchantId,
+          sourceType: "STRIPE",
+          sourceRefundId: refund.id,
+        },
+      },
+    });
+
+    if (existing) {
+      results.push(`${refund.id}: already processed`);
+      continue;
+    }
+
+    // Crea il record CreditNote
+    const creditNote = await prisma.creditNote.create({
+      data: {
+        merchantId,
+        originalInvoiceId: originalInvoice.id,
+        sourceType: "STRIPE",
+        sourceRefundId: refund.id,
+        sourceData: JSON.parse(JSON.stringify(refund)),
+        amount: refund.amount / 100, // Stripe usa centesimi
+        currency: refund.currency,
+        reason: refund.reason ?? "Rimborso Stripe",
+      },
+    });
+
+    // Audit log
+    await prisma.auditLog.create({
+      data: {
+        merchantId,
+        invoiceId: originalInvoice.id,
+        action: "REFUND_RECEIVED",
+        details: `Rimborso Stripe ricevuto: ${(refund.amount / 100).toFixed(2)} ${refund.currency}`,
+        metadata: {
+          refundId: refund.id,
+          creditNoteId: creditNote.id,
+          chargeId: charge.id,
+        },
+      },
+    });
+
+    // Accoda il job per creare la Nota di Credito su FiC
+    await enqueueRefundProcess({
+      creditNoteId: creditNote.id,
+      merchantId,
+      originalInvoiceId: originalInvoice.id,
+      stripeRefundId: refund.id,
+      amount: refund.amount / 100,
+    });
+
+    results.push(`${refund.id}: queued`);
+  }
+
+  return NextResponse.json({
+    received: true,
+    handled: true,
+    refunds: results,
+  });
 }
