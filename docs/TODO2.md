@@ -31,3 +31,11 @@ Configurare Resend per l'invio email (devo farlo io non tu)
 - ricerca altri servizi molto importanti da integrare in questa app e integrali
 - devo creare quali servizi? db supabase? account di quali servizi? docs\TODO.md? in file .env cosa manca di essenziale?
 - dimmi tutto cio che devo eseguire in locale per eseguire questa app e cosa devo fare per mandarela in produzione
+
+Merchant medio (10k–100k ordini/anno) ✅ TARGET MIGLIORE
+
+Problema: errori SDI, rimborsi, commercialista che rompe
+
+Budget: 70–150€/mese
+
+Capisce il valore delle tue feature killer

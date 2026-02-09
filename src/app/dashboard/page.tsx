@@ -54,18 +54,20 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In produzione: fetch reale da /api/dashboard/stats
-    // Per demo: dati statici
-    setStats({
-      totalInvoices: 0,
-      pendingData: 0,
-      sent: 0,
-      accepted: 0,
-      errors: 0,
-      totalRevenue: 0,
-    });
-    setActivities([]);
-    setLoading(false);
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/dashboard/stats");
+        if (!res.ok) throw new Error("Errore durante il caricamento");
+        const data = await res.json();
+        setStats(data.stats);
+        setActivities(data.recentActivity || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   if (loading) {
