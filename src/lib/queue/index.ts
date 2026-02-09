@@ -25,11 +25,11 @@ const getRedisConnection = () => {
 // ============================================================
 
 export const QUEUE_NAMES = {
-  INVOICE_PROCESS: "invoice:process",
-  INVOICE_SEND: "invoice:send",
-  MAGIC_LINK_SEND: "magiclink:send",
-  MAGIC_LINK_REMINDER: "magiclink:reminder",
-  REFUND_PROCESS: "refund:process",
+  INVOICE_PROCESS: "invoice-process",
+  INVOICE_SEND: "invoice-send",
+  MAGIC_LINK_SEND: "magiclink-send",
+  MAGIC_LINK_REMINDER: "magiclink-reminder",
+  REFUND_PROCESS: "refund-process",
 } as const;
 
 // ============================================================

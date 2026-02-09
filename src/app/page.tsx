@@ -36,13 +36,13 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/api/auth/login"
+              href="/login"
               className="text-sm text-gray-600 hover:text-gray-900 transition hidden sm:block"
             >
               Accedi
             </Link>
             <Link
-              href="/dashboard/onboarding"
+              href="/login"
               className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
             >
               Prova gratis
@@ -71,7 +71,7 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-4 mt-10">
             <Link
-              href="/dashboard/onboarding"
+              href="/login"
               className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/25"
             >
               Prova gratis per 14 giorni →

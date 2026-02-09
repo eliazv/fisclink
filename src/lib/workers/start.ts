@@ -13,6 +13,7 @@ import {
   processMagicLinkReminder,
 } from "./magiclink.worker";
 import { processRefund } from "./refund.worker";
+import { QUEUE_NAMES } from "../queue";
 
 const connection = new IORedis(
   process.env.REDIS_URL || "redis://localhost:6379",
@@ -25,10 +26,10 @@ console.log("🚀 Avvio worker FiscLink...");
 
 // Worker: Processa fattura (valida dati → crea su FiC o Magic Link)
 const invoiceProcessWorker = new Worker(
-  "invoice:process",
+  QUEUE_NAMES.INVOICE_PROCESS,
   async (job) => {
     console.log(
-      `📄 [invoice:process] Job ${job.id} - Invoice ${job.data.invoiceId}`,
+      `📄 [invoice-process] Job ${job.id} - Invoice ${job.data.invoiceId}`,
     );
     await processInvoice(job.data);
   },
@@ -41,10 +42,10 @@ const invoiceProcessWorker = new Worker(
 
 // Worker: Invia fattura a SDI tramite Fatture in Cloud
 const invoiceSendWorker = new Worker(
-  "invoice:send",
+  QUEUE_NAMES.INVOICE_SEND,
   async (job) => {
     console.log(
-      `📤 [invoice:send] Job ${job.id} - Invoice ${job.data.invoiceId}`,
+      `📤 [invoice-send] Job ${job.id} - Invoice ${job.data.invoiceId}`,
     );
     await processSendToSDI(job.data);
   },
@@ -57,10 +58,10 @@ const invoiceSendWorker = new Worker(
 
 // Worker: Invio email Magic Link
 const magicLinkSendWorker = new Worker(
-  "magiclink:send",
+  QUEUE_NAMES.MAGIC_LINK_SEND,
   async (job) => {
     console.log(
-      `✉️ [magiclink:send] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
+      `✉️ [magiclink-send] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
     );
     await processMagicLinkSend(job.data);
   },
@@ -72,10 +73,10 @@ const magicLinkSendWorker = new Worker(
 
 // Worker: Reminder Magic Link
 const magicLinkReminderWorker = new Worker(
-  "magiclink:reminder",
+  QUEUE_NAMES.MAGIC_LINK_REMINDER,
   async (job) => {
     console.log(
-      `🔔 [magiclink:reminder] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
+      `🔔 [magiclink-reminder] Job ${job.id} - MagicLink ${job.data.magicLinkId}`,
     );
     await processMagicLinkReminder(job.data);
   },
@@ -87,10 +88,10 @@ const magicLinkReminderWorker = new Worker(
 
 // Worker: Processa rimborsi → Note di Credito
 const refundProcessWorker = new Worker(
-  "refund:process",
+  QUEUE_NAMES.REFUND_PROCESS,
   async (job) => {
     console.log(
-      `💸 [refund:process] Job ${job.id} - CreditNote ${job.data.creditNoteId}`,
+      `💸 [refund-process] Job ${job.id} - CreditNote ${job.data.creditNoteId}`,
     );
     await processRefund(job.data);
   },
@@ -103,11 +104,11 @@ const refundProcessWorker = new Worker(
 
 // Event handlers comuni
 const workers = [
-  { worker: invoiceProcessWorker, name: "invoice:process" },
-  { worker: invoiceSendWorker, name: "invoice:send" },
-  { worker: magicLinkSendWorker, name: "magiclink:send" },
-  { worker: magicLinkReminderWorker, name: "magiclink:reminder" },
-  { worker: refundProcessWorker, name: "refund:process" },
+  { worker: invoiceProcessWorker, name: QUEUE_NAMES.INVOICE_PROCESS },
+  { worker: invoiceSendWorker, name: QUEUE_NAMES.INVOICE_SEND },
+  { worker: magicLinkSendWorker, name: QUEUE_NAMES.MAGIC_LINK_SEND },
+  { worker: magicLinkReminderWorker, name: QUEUE_NAMES.MAGIC_LINK_REMINDER },
+  { worker: refundProcessWorker, name: QUEUE_NAMES.REFUND_PROCESS },
 ];
 
 for (const { worker, name } of workers) {
@@ -125,11 +126,11 @@ for (const { worker, name } of workers) {
 }
 
 console.log("✅ Tutti i worker sono attivi:");
-console.log("   - invoice:process    (concurrency: 5)");
-console.log("   - invoice:send       (concurrency: 3)");
-console.log("   - magiclink:send     (concurrency: 5)");
-console.log("   - magiclink:reminder (concurrency: 3)");
-console.log("   - refund:process     (concurrency: 3)");
+console.log(`   - ${QUEUE_NAMES.INVOICE_PROCESS}    (concurrency: 5)`);
+console.log(`   - ${QUEUE_NAMES.INVOICE_SEND}       (concurrency: 3)`);
+console.log(`   - ${QUEUE_NAMES.MAGIC_LINK_SEND}     (concurrency: 5)`);
+console.log(`   - ${QUEUE_NAMES.MAGIC_LINK_REMINDER} (concurrency: 3)`);
+console.log(`   - ${QUEUE_NAMES.REFUND_PROCESS}     (concurrency: 3)`);
 
 // Graceful shutdown
 const shutdown = async () => {

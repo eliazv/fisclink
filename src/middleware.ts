@@ -9,6 +9,8 @@ import {
 
 const PUBLIC_PATHS = [
   "/",
+  "/login",
+  "/api/auth",
   "/api/webhooks/stripe",
   "/api/webhooks/shopify",
   "/api/webhooks/woocommerce",

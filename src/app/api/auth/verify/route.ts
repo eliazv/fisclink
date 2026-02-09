@@ -47,8 +47,12 @@ export async function GET(req: NextRequest) {
     .setExpirationTime("7d")
     .sign(secret);
 
-  // Redirect alla dashboard con cookie di sessione
-  const response = NextResponse.redirect(new URL("/dashboard", req.url));
+  // Redirect alla dashboard o onboarding se non completato
+  const redirectUrl = loginToken.merchant.onboarded
+    ? "/dashboard"
+    : "/dashboard/onboarding";
+
+  const response = NextResponse.redirect(new URL(redirectUrl, req.url));
   response.cookies.set("cf-session", jwt, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

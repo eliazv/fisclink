@@ -34,6 +34,7 @@ const SettingsSchema = z.object({
     .optional(),
   logoUrl: z.string().url("URL logo non valido").optional().or(z.literal("")),
   businessName: z.string().min(1).max(200).optional(),
+  onboarded: z.boolean().optional(),
 });
 
 // GET /api/settings — restituisce configurazione merchant (senza API key in chiaro)
@@ -176,6 +177,7 @@ export async function PUT(req: NextRequest) {
   if (data.brandColor) updateData.brandColor = data.brandColor;
   if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl || null;
   if (data.businessName) updateData.name = data.businessName;
+  if (data.onboarded !== undefined) updateData.onboarded = data.onboarded;
 
   if (Object.keys(updateData).length === 0) {
     return NextResponse.json(

@@ -92,6 +92,8 @@ export default function OnboardingPage() {
       } else if (currentStep === 2) {
         if (data.ficAccessToken) body.ficAccessToken = data.ficAccessToken;
         if (data.ficCompanyId) body.ficCompanyId = data.ficCompanyId;
+      } else if (currentStep === 3) {
+        body.onboarded = true;
       }
 
       if (Object.keys(body).length > 0) {
