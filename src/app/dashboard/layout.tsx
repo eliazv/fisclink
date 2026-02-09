@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ActiveNav } from "./nav-client";
 
 export const metadata: Metadata = {
   title: "Dashboard | FiscLink",
@@ -15,22 +17,11 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-30 hidden md:block">
         <div className="h-16 flex items-center px-6 border-b border-gray-200">
-          <span className="text-lg font-bold text-gray-900">⚡ FiscLink</span>
+          <Link href="/" className="text-lg font-bold text-gray-900">
+            ⚡ FiscLink
+          </Link>
         </div>
-        <nav className="p-4 space-y-1">
-          <NavItem href="/dashboard" icon="📊" label="Dashboard" />
-          <NavItem href="/dashboard/invoices" icon="📄" label="Fatture" />
-          <NavItem href="/dashboard/customers" icon="👥" label="Clienti" />
-          <NavItem href="/dashboard/reports" icon="📈" label="Report" />
-          <NavItem href="/dashboard/activity" icon="📋" label="Attività" />
-          <div className="pt-4 mt-4 border-t border-gray-200">
-            <NavItem
-              href="/dashboard/settings"
-              icon="⚙️"
-              label="Impostazioni"
-            />
-          </div>
-        </nav>
+        <ActiveNav />
       </aside>
 
       {/* Main content */}
@@ -38,15 +29,12 @@ export default function DashboardLayout({
         {/* Top bar */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-20">
           <div className="md:hidden">
-            <span className="text-lg font-bold">⚡ CF</span>
+            <Link href="/" className="text-lg font-bold">
+              ⚡ CF
+            </Link>
           </div>
           <div className="flex-1" />
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">Merchant Demo</span>
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
-              M
-            </div>
-          </div>
+          <MerchantBadge />
         </header>
 
         {/* Page content */}
@@ -56,22 +44,16 @@ export default function DashboardLayout({
   );
 }
 
-function NavItem({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: string;
-  label: string;
-}) {
+function MerchantBadge() {
+  // Server component: il nome viene inserito lato client
   return (
-    <a
-      href={href}
-      className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-    >
-      <span>{icon}</span>
-      <span>{label}</span>
-    </a>
+    <div className="flex items-center gap-3">
+      <span className="text-sm text-gray-500" id="merchant-name">
+        Account
+      </span>
+      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">
+        <span>M</span>
+      </div>
+    </div>
   );
 }

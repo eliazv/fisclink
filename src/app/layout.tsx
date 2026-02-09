@@ -98,10 +98,10 @@ export default function RootLayout({
                 "Middleware SaaS che collega Stripe alla fatturazione elettronica italiana SDI tramite Fatture in Cloud.",
               offers: {
                 "@type": "AggregateOffer",
-                lowPrice: "15",
-                highPrice: "59",
+                lowPrice: "0",
+                highPrice: "99",
                 priceCurrency: "EUR",
-                offerCount: 3,
+                offerCount: 4,
               },
               featureList: [
                 "Fatturazione elettronica automatica",

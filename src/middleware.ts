@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  type RateLimitConfig,
+} from "@/lib/rate-limit";
 
 const PUBLIC_PATHS = [
   "/",
@@ -45,7 +49,7 @@ export async function middleware(req: NextRequest) {
   // --- Rate Limiting ---
   if (pathname.startsWith("/api/")) {
     const ip = getClientIP(req);
-    let rlConfig = RATE_LIMITS.api;
+    let rlConfig: RateLimitConfig = RATE_LIMITS.api;
 
     if (pathname.startsWith("/api/webhooks/")) {
       rlConfig = RATE_LIMITS.webhook;

@@ -434,14 +434,153 @@ export default function MagicLinkPage() {
                       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="IT">Italia</option>
+                      <option value="DE">Germania</option>
+                      <option value="FR">Francia</option>
+                      <option value="ES">Spagna</option>
+                      <option value="AT">Austria</option>
+                      <option value="BE">Belgio</option>
+                      <option value="BG">Bulgaria</option>
+                      <option value="CY">Cipro</option>
+                      <option value="HR">Croazia</option>
+                      <option value="DK">Danimarca</option>
+                      <option value="EE">Estonia</option>
+                      <option value="FI">Finlandia</option>
+                      <option value="GR">Grecia</option>
+                      <option value="IE">Irlanda</option>
+                      <option value="LV">Lettonia</option>
+                      <option value="LT">Lituania</option>
+                      <option value="LU">Lussemburgo</option>
+                      <option value="MT">Malta</option>
+                      <option value="NL">Paesi Bassi</option>
+                      <option value="PL">Polonia</option>
+                      <option value="PT">Portogallo</option>
+                      <option value="CZ">Rep. Ceca</option>
+                      <option value="RO">Romania</option>
+                      <option value="SK">Slovacchia</option>
+                      <option value="SI">Slovenia</option>
+                      <option value="SE">Svezia</option>
+                      <option value="HU">Ungheria</option>
+                      <option value="GB">Regno Unito</option>
+                      <option value="CH">Svizzera</option>
+                      <option value="US">Stati Uniti</option>
                     </select>
                   </div>
                 </div>
               </>
             )}
 
-            {/* SDI / PEC (opzionali, per aziende) */}
-            {form.customerType === "BUSINESS" && (
+            {/* Indirizzo per clienti esteri */}
+            {form.customerType === "FOREIGN" ||
+            (form.country !== "IT" && form.country !== "") ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nazione *
+                  </label>
+                  <select
+                    required
+                    value={form.country}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, country: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Seleziona paese...</option>
+                    <option value="IT">Italia</option>
+                    <option value="DE">Germania</option>
+                    <option value="FR">Francia</option>
+                    <option value="ES">Spagna</option>
+                    <option value="AT">Austria</option>
+                    <option value="BE">Belgio</option>
+                    <option value="NL">Paesi Bassi</option>
+                    <option value="PT">Portogallo</option>
+                    <option value="GB">Regno Unito</option>
+                    <option value="CH">Svizzera</option>
+                    <option value="US">Stati Uniti</option>
+                    <option value="PL">Polonia</option>
+                    <option value="RO">Romania</option>
+                    <option value="SE">Svezia</option>
+                    <option value="CZ">Rep. Ceca</option>
+                    <option value="DK">Danimarca</option>
+                    <option value="FI">Finlandia</option>
+                    <option value="IE">Irlanda</option>
+                    <option value="GR">Grecia</option>
+                    <option value="HU">Ungheria</option>
+                    <option value="HR">Croazia</option>
+                    <option value="BG">Bulgaria</option>
+                    <option value="SK">Slovacchia</option>
+                    <option value="SI">Slovenia</option>
+                    <option value="LT">Lituania</option>
+                    <option value="LV">Lettonia</option>
+                    <option value="EE">Estonia</option>
+                    <option value="LU">Lussemburgo</option>
+                    <option value="MT">Malta</option>
+                    <option value="CY">Cipro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Indirizzo
+                  </label>
+                  <input
+                    type="text"
+                    value={form.address}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, address: e.target.value }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Indirizzo completo"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Città
+                    </label>
+                    <input
+                      type="text"
+                      value={form.city}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, city: e.target.value }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      CAP / ZIP
+                    </label>
+                    <input
+                      type="text"
+                      value={form.zipCode}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, zipCode: e.target.value }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                {form.customerType === "BUSINESS" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      VAT Number (Partita IVA estera)
+                    </label>
+                    <input
+                      type="text"
+                      value={form.vatNumber}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, vatNumber: e.target.value }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Es. DE123456789"
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {/* SDI / PEC (opzionali, per aziende italiane) */}
+            {form.customerType === "BUSINESS" && form.country === "IT" && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

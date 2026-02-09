@@ -31,7 +31,7 @@ export async function checkSDIStatus() {
       await enqueueInvoiceSend({
         invoiceId: invoice.id,
         merchantId: invoice.merchantId,
-        ficDocumentId: invoice.ficDocumentId ?? 0,
+        ficDocumentId: parseInt(invoice.ficDocumentId ?? "0", 10),
       });
     } catch (error) {
       console.error(`[CRON] Errore check SDI per ${invoice.id}:`, error);

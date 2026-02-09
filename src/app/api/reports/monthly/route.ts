@@ -192,7 +192,7 @@ export async function GET(req: NextRequest) {
 
   if (format === "pdf") {
     const pdfBuffer = await generateMonthlyReportPDF(reportData);
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="FiscLink_Report_${month}.pdf"`,

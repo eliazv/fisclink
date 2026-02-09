@@ -165,7 +165,9 @@ async function processStripeEvent(
           currency: orderData.currency,
           description:
             orderData.description || `Pagamento ${orderData.paymentIntentId}`,
-          sourceData: orderData.metadata as Record<string, unknown>,
+          sourceData: orderData.metadata
+            ? JSON.parse(JSON.stringify(orderData.metadata))
+            : undefined,
           status: "VALIDATING",
         },
       })
@@ -631,8 +633,12 @@ async function processNormalizedOrder(
         amount: data.amount,
         currency: data.currency,
         description: `Ordine ${data.sourceId}`,
-        lineItems: data.lineItems as unknown as Record<string, unknown>,
-        sourceData: data.metadata as Record<string, unknown>,
+        lineItems: data.lineItems
+          ? JSON.parse(JSON.stringify(data.lineItems))
+          : undefined,
+        sourceData: data.metadata
+          ? JSON.parse(JSON.stringify(data.metadata))
+          : undefined,
         status: "VALIDATING",
       },
     })

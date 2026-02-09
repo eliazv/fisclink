@@ -149,10 +149,10 @@ export default function SettingsPage() {
         wooCommerceStoreUrl: settings.wooStoreUrl || null,
       };
       // Solo invia le chiavi se l'utente le ha digitato (non vuote)
-      if (settings.stripeApiKey) body.stripeApiKey = settings.stripeApiKey;
+      if (settings.stripeApiKey) body.stripeSecretKey = settings.stripeApiKey;
       if (settings.stripeWebhookSecret)
         body.stripeWebhookSecret = settings.stripeWebhookSecret;
-      if (settings.ficApiKey) body.ficApiKey = settings.ficApiKey;
+      if (settings.ficApiKey) body.ficAccessToken = settings.ficApiKey;
       if (settings.shopifyApiKey) body.shopifyApiKey = settings.shopifyApiKey;
       if (settings.shopifyWebhookSecret)
         body.shopifyWebhookSecret = settings.shopifyWebhookSecret;

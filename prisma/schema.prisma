@@ -273,11 +273,11 @@ model Subscription {
   merchantId String   @unique
   merchant   Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
 
-  plan        PlanType  @default(STARTER)
+  plan        PlanType  @default(FREE)
   status      SubStatus @default(TRIAL)
 
   // Limiti
-  invoiceLimit  Int       @default(50)   // Fatture/mese per piano
+  invoiceLimit  Int       @default(20)   // Fatture/mese per piano
   invoicesUsed  Int       @default(0)    // Conteggio corrente mese
   resetAt       DateTime?                // Prossimo reset conteggio
 
@@ -296,9 +296,10 @@ model Subscription {
 }
 
 enum PlanType {
-  STARTER     // €15/mese - 50 fatture
-  PRO         // €29/mese - 500 fatture
-  ENTERPRISE  // €59/mese - illimitate
+  FREE        // €0/mese  - 20 fatture
+  STARTER     // €19/mese - 100 fatture
+  PRO         // €49/mese - 500 fatture
+  ENTERPRISE  // €99/mese - illimitate
 }
 
 enum SubStatus {

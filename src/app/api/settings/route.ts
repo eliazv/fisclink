@@ -12,6 +12,17 @@ const SettingsSchema = z.object({
   ficAccessToken: z.string().optional(),
   ficCompanyId: z.string().optional(),
 
+  // Shopify
+  shopifyApiKey: z.string().optional(),
+  shopifyWebhookSecret: z.string().optional(),
+  shopifyShopDomain: z.string().optional(),
+
+  // WooCommerce
+  wooCommerceConsumerKey: z.string().optional(),
+  wooCommerceConsumerSecret: z.string().optional(),
+  wooCommerceStoreUrl: z.string().optional(),
+  wooCommerceWebhookSecret: z.string().optional(),
+
   // Regime fiscale
   taxRegime: z.enum(["RF01", "RF02", "RF04", "RF19"]).optional(),
   bolloPolicy: z.enum(["CHARGE_CUSTOMER", "ABSORB_COST"]).optional(),
@@ -46,6 +57,13 @@ export async function GET(req: NextRequest) {
       stripeWebhookSecretEnc: true,
       ficApiKeyEnc: true,
       ficCompanyId: true,
+      shopifyApiKeyEnc: true,
+      shopifyWebhookSecretEnc: true,
+      shopifyShopDomain: true,
+      wooCommerceConsumerKeyEnc: true,
+      wooCommerceConsumerSecretEnc: true,
+      wooCommerceStoreUrl: true,
+      wooCommerceWebhookSecretEnc: true,
       createdAt: true,
     },
   });
@@ -71,6 +89,10 @@ export async function GET(req: NextRequest) {
     hasStripeWebhookSecret: !!merchant.stripeWebhookSecretEnc,
     hasFicToken: !!merchant.ficApiKeyEnc,
     hasFicCompanyId: !!merchant.ficCompanyId,
+    hasShopifyKey: !!merchant.shopifyApiKeyEnc,
+    shopifyShopDomain: merchant.shopifyShopDomain ?? null,
+    hasWooCommerceKey: !!merchant.wooCommerceConsumerKeyEnc,
+    wooCommerceStoreUrl: merchant.wooCommerceStoreUrl ?? null,
   });
 }
 
@@ -113,6 +135,39 @@ export async function PUT(req: NextRequest) {
   }
   if (data.ficCompanyId !== undefined) {
     updateData.ficCompanyId = data.ficCompanyId || null;
+  }
+
+  // Shopify
+  if (data.shopifyApiKey) {
+    updateData.shopifyApiKeyEnc = await encryptApiKey(data.shopifyApiKey);
+  }
+  if (data.shopifyWebhookSecret) {
+    updateData.shopifyWebhookSecretEnc = await encryptApiKey(
+      data.shopifyWebhookSecret,
+    );
+  }
+  if (data.shopifyShopDomain !== undefined) {
+    updateData.shopifyShopDomain = data.shopifyShopDomain || null;
+  }
+
+  // WooCommerce
+  if (data.wooCommerceConsumerKey) {
+    updateData.wooCommerceConsumerKeyEnc = await encryptApiKey(
+      data.wooCommerceConsumerKey,
+    );
+  }
+  if (data.wooCommerceConsumerSecret) {
+    updateData.wooCommerceConsumerSecretEnc = await encryptApiKey(
+      data.wooCommerceConsumerSecret,
+    );
+  }
+  if (data.wooCommerceStoreUrl !== undefined) {
+    updateData.wooCommerceStoreUrl = data.wooCommerceStoreUrl || null;
+  }
+  if (data.wooCommerceWebhookSecret) {
+    updateData.wooCommerceWebhookSecretEnc = await encryptApiKey(
+      data.wooCommerceWebhookSecret,
+    );
   }
 
   // Campi non cifrati

@@ -56,6 +56,7 @@ Mentre i competitor attuali si limitano a "copiare" un ordine da A a B, **FiscLi
 ## 🛠️ 4. Avanzamento Lavori e Roadmap MVP
 
 ### ✅ Completato
+
 - Analisi tecnica del core e posizionamento competitivo.
 - Struttura base del DB e worker asincroni per fatture/rimborsi.
 - **Visualizzazione Errori SDI**: Dashboard aggiornata per mostrare statistiche reali e log degli errori.
@@ -63,10 +64,12 @@ Mentre i competitor attuali si limitano a "copiare" un ordine da A a B, **FiscLi
 - **Onboarding Wizard**: Implementata la prima versione della procedura guidata per la configurazione iniziale.
 
 ### 🚧 In Corso
+
 - **Tax Mapping UI Evolution**: Raffinamento dell'interfaccia per il mapping delle aliquote IVA Stripe/FiC.
 - **Gestione Eccezioni**: Miglioramento dei worker per gestire rari casi di downtime delle API esterne.
 
 ### 📅 Prossimi Passi
+
 1. **Beta Testing**: Avvio dei primi test con dati reali da account Stripe di test.
 2. **Dashboard Commercialista Estesa**: Permettere agli studi professionali di accedere a più merchant.
 3. **Notifiche Proattive**: Integrazione email/Slack per notifiche immediate di fatture scartate.

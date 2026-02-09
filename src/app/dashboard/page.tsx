@@ -1,11 +1,13 @@
 /**
  * Dashboard principale del merchant
- * Mostra statistiche, fatture recenti e log di attività.
+ * Mostra statistiche, fatture recenti, errori SDI e stato connessioni.
+ * Tutti i dati provengono dal backend reale.
  */
 
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Stats {
   totalInvoices: number;
@@ -24,43 +26,79 @@ interface Activity {
   createdAt: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING_DATA: "bg-yellow-100 text-yellow-800",
-  VALIDATING: "bg-blue-100 text-blue-800",
-  READY: "bg-indigo-100 text-indigo-800",
-  SENDING: "bg-blue-100 text-blue-800",
-  SENT: "bg-cyan-100 text-cyan-800",
-  ACCEPTED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  ERROR: "bg-red-100 text-red-800",
-  FAILED: "bg-red-100 text-red-800",
-};
+interface ErrorInvoice {
+  id: string;
+  sourceId: string;
+  status: string;
+  lastError: string | null;
+  errorCode: string | null;
+  amount: number;
+  customer: { name: string | null; email: string } | null;
+}
 
-const STATUS_LABELS: Record<string, string> = {
-  PENDING_DATA: "Dati mancanti",
-  VALIDATING: "In validazione",
-  READY: "Pronta",
-  SENDING: "In invio",
-  SENT: "Inviata",
-  ACCEPTED: "Accettata SDI",
-  REJECTED: "Rifiutata",
-  ERROR: "Errore",
-  FAILED: "Fallita",
-};
+interface IntegrationStatus {
+  stripe: { connected: boolean; detail: string };
+  fic: { connected: boolean; detail: string };
+  shopify: { connected: boolean; detail: string };
+  woocommerce: { connected: boolean; detail: string };
+}
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [errorInvoices, setErrorInvoices] = useState<ErrorInvoice[]>([]);
+  const [integrations, setIntegrations] = useState<IntegrationStatus | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/dashboard/stats");
-        if (!res.ok) throw new Error("Errore durante il caricamento");
-        const data = await res.json();
-        setStats(data.stats);
-        setActivities(data.recentActivity || []);
+        const [statsRes, errorsRes, settingsRes] = await Promise.all([
+          fetch("/api/dashboard/stats"),
+          fetch("/api/invoices?status=ERROR&status=REJECTED&limit=5"),
+          fetch("/api/settings"),
+        ]);
+
+        if (statsRes.ok) {
+          const data = await statsRes.json();
+          setStats(data.stats);
+          setActivities(data.recentActivity || []);
+        }
+
+        if (errorsRes.ok) {
+          const data = await errorsRes.json();
+          setErrorInvoices(data.invoices ?? []);
+        }
+
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
+          setIntegrations({
+            stripe: {
+              connected: data.hasStripeKey,
+              detail: data.hasStripeKey
+                ? "Chiavi configurate"
+                : "Non configurato",
+            },
+            fic: {
+              connected: data.hasFicToken && data.hasFicCompanyId,
+              detail: data.hasFicToken ? "Token configurato" : "Token mancante",
+            },
+            shopify: {
+              connected: data.hasShopifyKey,
+              detail: data.hasShopifyKey
+                ? `Shop: ${data.shopifyShopDomain ?? "configurato"}`
+                : "Non configurato",
+            },
+            woocommerce: {
+              connected: data.hasWooCommerceKey,
+              detail: data.hasWooCommerceKey
+                ? `Store: ${data.wooCommerceStoreUrl ?? "configurato"}`
+                : "Non configurato",
+            },
+          });
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -116,7 +154,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue card */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white shadow-md">
         <p className="text-blue-100 text-sm">
           Fatturato totale (inviato/accettato)
         </p>
@@ -128,77 +166,201 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Setup guide (se non configurato) */}
-      {stats?.totalInvoices === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            🚀 Inizia in 3 passi
-          </h2>
-          <div className="space-y-4">
-            <SetupStep
-              number={1}
-              title="Configura le chiavi API"
-              description="Inserisci le tue chiavi Stripe e Fatture in Cloud nelle Impostazioni."
-              done={false}
-            />
-            <SetupStep
-              number={2}
-              title="Collega il webhook Stripe"
-              description="Aggiungi l'URL del webhook nel tuo dashboard Stripe."
-              done={false}
-            />
-            <SetupStep
-              number={3}
-              title="Effettua un pagamento di test"
-              description="Fai un pagamento di prova per verificare che tutto funzioni."
-              done={false}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Errori SDI reali + Attività */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Errori SDI */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="px-4 py-3 border-b border-gray-200 bg-red-50 flex justify-between items-center">
+              <h3 className="font-semibold text-red-900 flex items-center gap-2 text-sm md:text-base">
+                <span>⚠️</span> Errori SDI che richiedono intervento
+              </h3>
+              <Link
+                href="/dashboard/invoices?filter=ERROR"
+                className="text-xs text-red-600 font-bold hover:underline"
+              >
+                VEDI TUTTI →
+              </Link>
+            </div>
+            <div className="p-0">
+              {errorInvoices.length === 0 ? (
+                <div className="p-8 text-center text-gray-400 italic text-sm">
+                  ✓ Nessun errore SDI rilevato. Ottimo lavoro!
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {errorInvoices.map((inv) => (
+                    <li
+                      key={inv.id}
+                      className="px-4 py-4 hover:bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-3 transition-colors"
+                    >
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-gray-400 uppercase font-mono">
+                            {inv.sourceId.slice(0, 14)}...
+                          </span>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {inv.customer?.name ?? inv.customer?.email ?? "N/A"}
+                          </span>
+                        </div>
+                        <span
+                          className={`text-xs font-medium w-fit px-1.5 py-0.5 rounded border mb-1 ${
+                            inv.status === "REJECTED"
+                              ? "text-orange-600 bg-orange-50 border-orange-100"
+                              : "text-red-600 bg-red-50 border-red-100"
+                          }`}
+                        >
+                          {inv.status === "REJECTED"
+                            ? "Rifiutata SDI"
+                            : (inv.errorCode ?? "Errore")}
+                        </span>
+                        <span className="text-xs text-gray-500 line-clamp-1">
+                          {inv.lastError ?? "Errore sconosciuto"}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        {inv.status === "ERROR" && (
+                          <Link
+                            href={`/dashboard/invoices?search=${inv.sourceId}`}
+                            className="text-xs px-4 py-2 rounded-lg font-bold border bg-blue-600 text-white border-blue-600 hover:bg-blue-700 transition-all"
+                          >
+                            Gestisci
+                          </Link>
+                        )}
+                        {inv.status === "REJECTED" && (
+                          <Link
+                            href="/dashboard/settings"
+                            className="text-xs px-4 py-2 rounded-lg font-bold border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 transition-all"
+                          >
+                            Configura
+                          </Link>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Attività recente */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+                Attività recente
+              </h2>
+            </div>
+            <div className="divide-y divide-gray-100 max-h-[300px] overflow-y-auto">
+              {activities.length === 0 ? (
+                <div className="px-6 py-8 text-center text-gray-400 text-sm">
+                  Nessuna attività registrata.
+                </div>
+              ) : (
+                activities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="px-6 py-3 flex items-center gap-3"
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        activity.level === "ERROR"
+                          ? "bg-red-500"
+                          : activity.level === "WARN"
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                      }`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 truncate">
+                        {activity.details ?? activity.action}
+                      </p>
+                    </div>
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {new Date(activity.createdAt).toLocaleTimeString("it-IT")}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Attività recente */}
-      <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Attività recente
-          </h2>
-        </div>
-        <div className="divide-y divide-gray-100">
-          {activities.length === 0 ? (
-            <div className="px-6 py-12 text-center text-gray-400">
-              <p className="text-4xl mb-2">📋</p>
-              <p>
-                Nessuna attività ancora. Configura le integrazioni per iniziare.
-              </p>
-            </div>
-          ) : (
-            activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="px-6 py-3 flex items-center gap-3"
-              >
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    activity.level === "ERROR"
-                      ? "bg-red-500"
-                      : activity.level === "WARN"
-                        ? "bg-yellow-500"
-                        : "bg-green-500"
-                  }`}
+        {/* Stato Connessioni reale */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
+              <span>🔌</span> Stato Integrazioni
+            </h3>
+            {integrations ? (
+              <div className="space-y-4">
+                <ConnectionStatus
+                  label="Stripe"
+                  connected={integrations.stripe.connected}
+                  detail={integrations.stripe.detail}
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 truncate">
-                    {activity.details ?? activity.action}
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400 whitespace-nowrap">
-                  {new Date(activity.createdAt).toLocaleString("it-IT")}
-                </span>
+                <ConnectionStatus
+                  label="Fatture in Cloud"
+                  connected={integrations.fic.connected}
+                  detail={integrations.fic.detail}
+                />
+                <ConnectionStatus
+                  label="Shopify"
+                  connected={integrations.shopify.connected}
+                  detail={integrations.shopify.detail}
+                />
+                <ConnectionStatus
+                  label="WooCommerce"
+                  connected={integrations.woocommerce.connected}
+                  detail={integrations.woocommerce.detail}
+                />
               </div>
-            ))
+            ) : (
+              <p className="text-sm text-gray-400">Caricamento...</p>
+            )}
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm">
+            <h4 className="text-indigo-900 font-bold text-sm mb-2">
+              🎁 Promo Early Adopter
+            </h4>
+            <p className="text-indigo-700 text-xs leading-relaxed">
+              Stai usando la versione Beta. I primi 100 merchant avranno 3 mesi
+              del piano Growth gratis.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConnectionStatus({
+  label,
+  connected,
+  detail,
+}: {
+  label: string;
+  connected: boolean;
+  detail: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div
+        className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${connected ? "bg-green-500" : "bg-gray-300"}`}
+      />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-gray-900">{label}</p>
+          {!connected && (
+            <Link
+              href="/dashboard/settings"
+              className="text-xs text-blue-600 font-bold hover:underline"
+            >
+              CONFIGURA
+            </Link>
           )}
         </div>
+        <p className="text-xs text-gray-500 truncate">{detail}</p>
       </div>
     </div>
   );
@@ -216,42 +378,14 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-2">
+    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+      <div className="flex items-center justify-between">
         <span className="text-2xl">{icon}</span>
+        <span className={`text-2xl font-bold ${color ?? "text-gray-900"}`}>
+          {value}
+        </span>
       </div>
-      <p className={`text-2xl font-bold ${color ?? "text-gray-900"}`}>
-        {value}
-      </p>
-      <p className="text-xs text-gray-500 mt-1">{label}</p>
-    </div>
-  );
-}
-
-function SetupStep({
-  number,
-  title,
-  description,
-  done,
-}: {
-  number: number;
-  title: string;
-  description: string;
-  done: boolean;
-}) {
-  return (
-    <div className="flex gap-4">
-      <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-          done ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-        }`}
-      >
-        {done ? "✓" : number}
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-900">{title}</p>
-        <p className="text-sm text-gray-500">{description}</p>
-      </div>
+      <p className="text-xs text-gray-500 mt-2">{label}</p>
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function Home() {
               Accedi
             </Link>
             <Link
-              href="/dashboard/settings"
+              href="/dashboard/onboarding"
               className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
             >
               Prova gratis
@@ -71,7 +71,7 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-4 mt-10">
             <Link
-              href="/dashboard/settings"
+              href="/dashboard/onboarding"
               className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/25"
             >
               Prova gratis per 14 giorni →
@@ -343,43 +343,59 @@ export default function Home() {
             Inizia gratis. Nessuna carta di credito richiesta. Upgrade quando ti
             serve.
           </p>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             <PriceCard
               name="Starter"
-              price="15"
-              description="Per forfettari e freelancer"
+              price="0"
+              description="Per testare e micro-merchant"
               features={[
-                "Fino a 50 fatture/mese",
-                "Stripe + Fatture in Cloud",
-                "Magic Link automatico",
+                "20 fatture/mese",
+                "Invio SDI base",
                 "Calcolo bollo automatico",
+                "Branding FiscLink",
                 "Supporto email",
               ]}
+              cta="Inizia gratis"
+            />
+            <PriceCard
+              name="Growth"
+              price="19"
+              description="Per e-commerce attivi"
+              features={[
+                "100 fatture/mese",
+                "Magic Link email illimitato",
+                "Note di credito automatiche",
+                "Error handling base",
+                "Branding personalizzato",
+              ]}
+              highlighted
+              cta="Prova 14 giorni gratis"
             />
             <PriceCard
               name="Pro"
-              price="29"
-              description="Per e-commerce attivi"
+              price="49"
+              description="Per brand in crescita"
               features={[
-                "Fino a 500 fatture/mese",
-                "Stripe + Shopify",
-                "Note di credito automatiche",
-                "Dashboard riconciliazione",
-                "Supporto prioritario",
+                "500 fatture/mese",
+                "Magic Link SMS / WhatsApp",
+                "Mapping IVA avanzato",
+                "OSS / gestione EU",
+                "Notifiche errori in tempo reale",
               ]}
-              highlighted
+              cta="Prova 14 giorni gratis"
             />
             <PriceCard
               name="Enterprise"
-              price="59"
-              description="Per grandi volumi"
+              price="99"
+              description="Per power seller"
               features={[
                 "Fatture illimitate",
                 "Multi-store / multi-merchant",
-                "API dedicate",
-                "Accesso commercialista",
-                "SLA garantito",
+                "Dashboard commercialista",
+                "Riconciliazione Stripe/PayPal",
+                "Supporto prioritario + SLA",
               ]}
+              cta="Contattaci"
             />
           </div>
         </div>
@@ -435,7 +451,7 @@ export default function Home() {
             gratis per 14 giorni, nessuna carta richiesta.
           </p>
           <Link
-            href="/dashboard/settings"
+            href="/dashboard/onboarding"
             className="inline-block px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition shadow-lg"
           >
             Inizia gratis ora →
@@ -638,16 +654,19 @@ function PriceCard({
   description,
   features,
   highlighted,
+  cta = "Inizia ora",
 }: {
   name: string;
   price: string;
   description: string;
   features: string[];
   highlighted?: boolean;
+  cta?: string;
 }) {
+  const isFree = price === "0";
   return (
     <div
-      className={`rounded-xl border p-6 ${
+      className={`rounded-xl border p-6 flex flex-col ${
         highlighted
           ? "border-blue-600 ring-2 ring-blue-600 bg-blue-50"
           : "border-gray-200 bg-white"
@@ -661,25 +680,31 @@ function PriceCard({
       <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
       <p className="text-sm text-gray-500">{description}</p>
       <p className="mt-4">
-        <span className="text-3xl font-bold text-gray-900">€{price}</span>
-        <span className="text-gray-500">/mese</span>
+        {isFree ? (
+          <span className="text-3xl font-bold text-gray-900">Gratis</span>
+        ) : (
+          <>
+            <span className="text-3xl font-bold text-gray-900">€{price}</span>
+            <span className="text-gray-500">/mese</span>
+          </>
+        )}
       </p>
-      <ul className="mt-6 space-y-2">
+      <ul className="mt-6 space-y-2 flex-1">
         {features.map((f, i) => (
           <li key={i} className="text-sm text-gray-600 flex gap-2">
-            <span className="text-green-500">✓</span> {f}
+            <span className="text-green-500 shrink-0">✓</span> {f}
           </li>
         ))}
       </ul>
       <Link
-        href="/dashboard/settings"
+        href="/dashboard/onboarding"
         className={`block mt-6 text-center py-2.5 rounded-lg text-sm font-semibold transition-colors ${
           highlighted
             ? "bg-blue-600 text-white hover:bg-blue-700"
             : "bg-gray-100 text-gray-700 hover:bg-gray-200"
         }`}
       >
-        Inizia ora
+        {cta}
       </Link>
     </div>
   );

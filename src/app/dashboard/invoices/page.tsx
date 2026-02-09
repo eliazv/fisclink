@@ -1,10 +1,11 @@
 /**
- * Pagina Fatture - Lista tutte le fatture del merchant
+ * Pagina Fatture - Lista tutte le fatture del merchant con fetch reale
  */
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface Invoice {
   id: string;
@@ -16,7 +17,9 @@ interface Invoice {
   currency: string;
   description: string | null;
   lastError: string | null;
+  errorCode: string | null;
   bolloApplied: boolean;
+  rejectionReason: string | null;
   customer: {
     name: string | null;
     email: string;
@@ -53,17 +56,82 @@ const STATUS_LABELS: Record<string, string> = {
   FAILED: "Fallita",
 };
 
-export default function InvoicesPage() {
+const SDI_ERROR_HELP: Record<string, string> = {
+  "00200":
+    "Formato file non conforme al tracciato XML. Controlla la struttura della fattura.",
+  "00301":
+    "Aliquota IVA 0% richiede il campo Natura IVA. Configura il mapping IVA nelle impostazioni.",
+  "00305": "Codice Natura IVA non valido per l'aliquota specificata.",
+  "00400": "Errore decompressione file. Riprova l'invio.",
+  "00404":
+    "Codice Fiscale del cessionario non valido. Verifica i dati del cliente.",
+  "00409":
+    "Partita IVA del cessionario non attiva in anagrafica. Verifica i dati del cliente.",
+  "00471":
+    "Codice Destinatario non attivo. Il cliente deve fornire un codice SDI valido o PEC.",
+};
+
+export default function InvoicesPageWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        </div>
+      }
+    >
+      <InvoicesPage />
+    </Suspense>
+  );
+}
+
+function InvoicesPage() {
+  const searchParams = useSearchParams();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<string | null>(
+    searchParams.get("filter"),
+  );
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [selectedError, setSelectedError] = useState<string | null>(null);
+
+  const fetchInvoices = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (filter) params.set("status", filter);
+      if (search) params.set("search", search);
+      params.set("page", String(page));
+      params.set("limit", "20");
+
+      const res = await fetch(`/api/invoices?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setInvoices(data.invoices ?? []);
+        setTotal(data.total ?? 0);
+      }
+    } catch (err) {
+      console.error("Errore caricamento fatture:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [filter, search, page]);
 
   useEffect(() => {
-    // Demo: dati statici. In produzione: fetch da /api/invoices
-    setInvoices([]);
-    setLoading(false);
-  }, [filter, search]);
+    fetchInvoices();
+  }, [fetchInvoices]);
+
+  // Debounce search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  const totalPages = Math.ceil(total / 20);
 
   return (
     <div className="space-y-6">
@@ -71,7 +139,9 @@ export default function InvoicesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Fatture</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Tutte le fatture elettroniche gestite dal connettore
+            {total > 0
+              ? `${total} fatture totali`
+              : "Tutte le fatture elettroniche gestite dal connettore"}
           </p>
         </div>
       </div>
@@ -85,16 +155,21 @@ export default function InvoicesPage() {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 min-w-[200px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {[
             [null, "Tutte"],
             ["PENDING_DATA", "⏳ Dati mancanti"],
             ["ACCEPTED", "✅ Accettate"],
+            ["SENT", "📨 Inviate"],
             ["ERROR", "⚠️ Errori"],
+            ["REJECTED", "❌ Rifiutate"],
           ].map(([value, label]) => (
             <button
               key={String(value)}
-              onClick={() => setFilter(value)}
+              onClick={() => {
+                setFilter(value);
+                setPage(1);
+              }}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                 filter === value
                   ? "bg-blue-100 text-blue-700 border border-blue-200"
@@ -117,11 +192,14 @@ export default function InvoicesPage() {
           <div className="px-6 py-16 text-center text-gray-400">
             <p className="text-5xl mb-3">📄</p>
             <p className="text-lg font-medium text-gray-600">
-              Nessuna fattura ancora
+              {filter
+                ? "Nessuna fattura con questo filtro"
+                : "Nessuna fattura ancora"}
             </p>
             <p className="text-sm mt-1">
-              Le fatture appariranno qui non appena riceverai un pagamento
-              Stripe.
+              {filter
+                ? "Prova a cambiare i filtri o la ricerca."
+                : "Le fatture appariranno qui non appena riceverai un pagamento."}
             </p>
           </div>
         ) : (
@@ -170,7 +248,7 @@ export default function InvoicesPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 font-medium">
-                      € {inv.amount.toFixed(2)}
+                      € {Number(inv.amount).toFixed(2)}
                     </td>
                     <td className="px-4 py-3 text-gray-500">
                       {inv.invoiceNumber ?? "—"}
@@ -187,20 +265,84 @@ export default function InvoicesPage() {
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                       {new Date(inv.createdAt).toLocaleDateString("it-IT")}
                     </td>
-                    <td className="px-4 py-3 max-w-[200px]">
-                      {inv.lastError && (
-                        <p
-                          className="text-xs text-red-600 truncate"
-                          title={inv.lastError}
+                    <td className="px-4 py-3 max-w-[250px]">
+                      {(inv.lastError || inv.rejectionReason) && (
+                        <button
+                          onClick={() =>
+                            setSelectedError(
+                              inv.id === selectedError ? null : inv.id,
+                            )
+                          }
+                          className="text-xs text-red-600 hover:underline text-left"
+                          title={inv.lastError ?? inv.rejectionReason ?? ""}
                         >
-                          {inv.lastError}
-                        </p>
+                          {inv.errorCode ? `[${inv.errorCode}] ` : ""}
+                          {(inv.lastError ?? inv.rejectionReason ?? "").slice(
+                            0,
+                            50,
+                          )}
+                          ...
+                        </button>
                       )}
+                      {/* Pannello errore espanso con spiegazione e azione */}
+                      {selectedError === inv.id &&
+                        (inv.lastError || inv.rejectionReason) && (
+                          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-xs text-red-800 font-medium mb-1">
+                              Dettaglio errore:
+                            </p>
+                            <p className="text-xs text-red-700 mb-2">
+                              {inv.lastError ?? inv.rejectionReason}
+                            </p>
+                            {inv.errorCode && SDI_ERROR_HELP[inv.errorCode] && (
+                              <>
+                                <p className="text-xs text-red-800 font-medium mb-1">
+                                  💡 Come risolvere:
+                                </p>
+                                <p className="text-xs text-red-600">
+                                  {SDI_ERROR_HELP[inv.errorCode]}
+                                </p>
+                              </>
+                            )}
+                            {!inv.errorCode &&
+                              inv.status === "PENDING_DATA" && (
+                                <p className="text-xs text-blue-600 font-medium">
+                                  → Un Magic Link è stato inviato al cliente per
+                                  raccogliere i dati fiscali.
+                                </p>
+                              )}
+                          </div>
+                        )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Paginazione */}
+        {totalPages > 1 && (
+          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+            <p className="text-xs text-gray-500">
+              Pagina {page} di {totalPages} ({total} fatture)
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              >
+                ← Indietro
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
+              >
+                Avanti →
+              </button>
+            </div>
           </div>
         )}
       </div>
