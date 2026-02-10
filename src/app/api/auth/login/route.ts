@@ -48,24 +48,51 @@ export async function POST(req: NextRequest) {
 
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/auth/verify?token=${token}`;
 
-  await getResend().emails.send({
-    from: process.env.EMAIL_FROM || "FiscLink <noreply@fisclink.it>",
-    to: normalizedEmail,
-    subject: "Accedi a FiscLink",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #1e40af;">FiscLink</h2>
-        <p>Clicca il pulsante per accedere alla tua dashboard:</p>
-        <a href="${loginUrl}" 
-           style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
-          Accedi ora
-        </a>
-        <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
-          Il link scade tra 15 minuti. Se non hai richiesto l'accesso, ignora questa email.
-        </p>
-      </div>
-    `,
-  });
+  // Log link in dev mode
+  if (process.env.NODE_ENV === "development") {
+    console.log("==========================================");
+    console.log("DEV MODE: Magic Link di Accesso");
+    console.log(`Email: ${normalizedEmail}`);
+    console.log(`URL:   ${loginUrl}`);
+    console.log("==========================================");
+  }
+
+  try {
+    const { error } = await getResend().emails.send({
+      from: process.env.EMAIL_FROM || "FiscLink <noreply@fisclink.it>",
+      to: normalizedEmail,
+      subject: "Accedi a FiscLink",
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+          <h2 style="color: #1e40af;">FiscLink</h2>
+          <p>Clicca il pulsante per accedere alla tua dashboard:</p>
+          <a href="${loginUrl}" 
+             style="display: inline-block; padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+            Accedi ora
+          </a>
+          <p style="color: #6b7280; font-size: 14px; margin-top: 24px;">
+            Il link scade tra 15 minuti. Se non hai richiesto l'accesso, ignora questa email.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
+      // In dev mode we might still want to return success if we logged the link
+      if (process.env.NODE_ENV !== "development") {
+        return NextResponse.json(
+          { error: "Errore invio email" },
+          { status: 500 },
+        );
+      }
+    }
+  } catch (err) {
+    console.error("Unexpected email error:", err);
+    if (process.env.NODE_ENV !== "development") {
+      return NextResponse.json({ error: "Errore interno" }, { status: 500 });
+    }
+  }
 
   return NextResponse.json({ message: "Email inviata. Controlla la inbox." });
 }

@@ -2,16 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  BarChart3,
+  FileText,
+  TrendingUp,
+  Rocket,
+  Settings,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", icon: "📊", label: "Dashboard", exact: true },
-  { href: "/dashboard/invoices", icon: "📄", label: "Fatture" },
-  { href: "/dashboard/reports", icon: "📈", label: "Report" },
-  { href: "/dashboard/onboarding", icon: "🚀", label: "Onboarding" },
+  { href: "/dashboard", icon: BarChart3, label: "Dashboard", exact: true },
+  { href: "/dashboard/invoices", icon: FileText, label: "Fatture" },
+  { href: "/dashboard/reports", icon: TrendingUp, label: "Report" },
+  { href: "/dashboard/onboarding", icon: Rocket, label: "Onboarding" },
 ];
 
 const BOTTOM_ITEMS = [
-  { href: "/dashboard/settings", icon: "⚙️", label: "Impostazioni" },
+  { href: "/dashboard/settings", icon: Settings, label: "Impostazioni" },
 ];
 
 export function ActiveNav() {
@@ -23,38 +32,49 @@ export function ActiveNav() {
   };
 
   return (
-    <nav className="p-4 space-y-1 flex flex-col h-[calc(100%-4rem)]">
-      <div className="space-y-1 flex-1">
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              isActive(item.href, item.exact)
-                ? "bg-blue-50 text-blue-700 font-semibold"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </Link>
-        ))}
+    <nav className="p-4 space-y-2 flex flex-col h-[calc(100%-4rem)]">
+      <div className="space-y-1 flex-1 text-slate-600">
+        {NAV_ITEMS.map((item) => {
+          const Active = isActive(item.href, item.exact);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group ${
+                Active
+                  ? "bg-[#0f172a] text-white shadow-lg shadow-slate-200"
+                  : "hover:bg-slate-50 hover:text-[#0f172a]"
+              }`}
+            >
+              <item.icon
+                className={`w-4 h-4 ${Active ? "text-white" : "text-slate-400 group-hover:text-[#0f172a]"}`}
+              />
+              <span className="flex-1">{item.label}</span>
+              {Active && <ChevronRight className="w-3 h-3 opacity-50" />}
+            </Link>
+          );
+        })}
       </div>
-      <div className="pt-4 mt-4 border-t border-gray-200 space-y-1">
-        {BOTTOM_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-              isActive(item.href)
-                ? "bg-blue-50 text-blue-700 font-semibold"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </Link>
-        ))}
+      <div className="pt-4 mt-4 border-t border-slate-100 space-y-1">
+        {BOTTOM_ITEMS.map((item) => {
+          const Active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group ${
+                Active
+                  ? "bg-[#0f172a] text-white shadow-lg shadow-slate-200"
+                  : "hover:bg-slate-50 hover:text-[#0f172a]"
+              }`}
+            >
+              <item.icon
+                className={`w-4 h-4 ${Active ? "text-white" : "text-slate-400 group-hover:text-[#0f172a]"}`}
+              />
+              <span className="flex-1">{item.label}</span>
+            </Link>
+          );
+        })}
         <LogoutButton />
       </div>
     </nav>
@@ -70,9 +90,9 @@ function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors w-full"
+      className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-colors w-full group mt-1"
     >
-      <span>🚪</span>
+      <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-600" />
       <span>Esci</span>
     </button>
   );

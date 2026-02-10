@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,40 +11,58 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#fafafa]">
       {/* Nav */}
-      <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="text-lg font-bold text-gray-900">
-            ⚡ FiscLink
+      <nav className="border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-50">
+        <div className="max-w-6xl mx-auto px-6 h-18 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/fisclink.png"
+              alt="FiscLink Logo"
+              width={32}
+              height={32}
+              className="rounded-lg shadow-sm group-hover:scale-105 transition-transform"
+            />
+            <span className="text-xl font-extrabold text-[#0f172a] tracking-tight">
+              FiscLink
+            </span>
           </Link>
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
-            <a href="#problemi" className="hover:text-gray-900 transition">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-500">
+            <a
+              href="#problemi"
+              className="hover:text-blue-600 transition-colors"
+            >
               Problemi
             </a>
-            <a href="#come-funziona" className="hover:text-gray-900 transition">
+            <a
+              href="#come-funziona"
+              className="hover:text-blue-600 transition-colors"
+            >
               Come funziona
             </a>
-            <a href="#magic-link" className="hover:text-gray-900 transition">
+            <a
+              href="#magic-link"
+              className="hover:text-blue-600 transition-colors"
+            >
               Magic Link
             </a>
-            <a href="#pricing" className="hover:text-gray-900 transition">
+            <a
+              href="#pricing"
+              className="hover:text-blue-600 transition-colors"
+            >
               Prezzi
             </a>
-            <a href="#faq" className="hover:text-gray-900 transition">
-              FAQ
-            </a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link
               href="/login"
-              className="text-sm text-gray-600 hover:text-gray-900 transition hidden sm:block"
+              className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition"
             >
               Accedi
             </Link>
             <Link
               href="/login"
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
+              className="px-5 py-2.5 bg-[#2563eb] text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition shadow-md shadow-blue-500/10 active:scale-95"
             >
               Prova gratis
             </Link>
@@ -52,281 +71,458 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="max-w-6xl mx-auto px-6 py-20 md:py-28">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full mb-6">
-            <span>🇮🇹</span>
-            <span>Per PMI italiane che usano Stripe / Shopify</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] tracking-tight">
-            Smetti di rincorrere i clienti per il{" "}
-            <span className="text-blue-600">Codice Fiscale</span>.
-          </h1>
-          <p className="text-lg md:text-xl text-gray-500 mt-6 leading-relaxed max-w-2xl">
-            Il connettore che trasforma ogni pagamento Stripe in una{" "}
-            <strong className="text-gray-700">
-              fattura elettronica a norma SDI
-            </strong>
-            . Automaticamente. Anche se il cliente si dimentica i dati fiscali.
-          </p>
-          <div className="flex flex-wrap gap-4 mt-10">
-            <Link
-              href="/login"
-              className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/25"
-            >
-              Prova gratis per 14 giorni →
-            </Link>
-            <a
-              href="#come-funziona"
-              className="px-6 py-3.5 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition"
-            >
-              Scopri come funziona
-            </a>
-          </div>
-          <div className="flex items-center gap-6 mt-8 text-sm text-gray-400">
-            <span className="flex items-center gap-1.5">
-              ✓ Nessuna carta richiesta
-            </span>
-            <span className="flex items-center gap-1.5">
-              ✓ Setup in 2 minuti
-            </span>
-            <span className="flex items-center gap-1.5">✓ Conforme SDI</span>
+      <section className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-32">
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-100 text-[#2563eb] text-xs font-bold rounded-full mb-8 shadow-sm">
+              <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+              <span>Novità: Supporto Shopify in Beta</span>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-extrabold text-[#0f172a] leading-[1.05] tracking-tight">
+              Smetti di rincorrere i clienti per il{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                Codice Fiscale
+              </span>
+              .
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-500 mt-8 leading-relaxed max-w-2xl font-medium">
+              Il connettore inteligente che trasforma ogni pagamento Stripe in
+              una{" "}
+              <span className="text-gray-900 underline decoration-blue-500 decoration-4 underline-offset-4">
+                fattura elettronica SDI
+              </span>
+              . Automaticamente. Anche se il cliente dimentica i dati.
+            </p>
+            <div className="flex flex-wrap gap-5 mt-12">
+              <Link
+                href="/login"
+                className="px-8 py-4 bg-[#2563eb] text-white font-bold rounded-2xl hover:bg-blue-700 transition shadow-xl shadow-blue-600/20 active:scale-95 text-lg"
+              >
+                Inizia gratis ora →
+              </Link>
+              <a
+                href="#come-funziona"
+                className="px-8 py-4 bg-white border border-gray-200 text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition shadow-sm active:scale-95 text-lg"
+              >
+                Guarda come funziona
+              </a>
+            </div>
+            <div className="flex items-center gap-8 mt-10 text-sm font-semibold text-gray-400">
+              <span className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="3"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+                Setup in 120 secondi
+              </span>
+              <span className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="3"
+                    d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+                Per Forfettari & PMI
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Abstract background elements */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-blue-50 rounded-full blur-3xl opacity-50 -z-10"></div>
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-3xl opacity-50 -z-10"></div>
       </section>
 
       {/* Social proof / numeri */}
-      <section className="border-y border-gray-100 py-10 bg-gray-50/50">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <section className="bg-white border-y border-gray-100 py-16">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
           <div>
-            <p className="text-3xl font-bold text-gray-900">12 gg</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Termine massimo fattura immediata
+            <p className="text-4xl font-black text-[#0f172a] tracking-tight">
+              12 gg
+            </p>
+            <p className="text-xs uppercase font-bold text-gray-400 mt-2 tracking-wider">
+              Limite invio SDI
             </p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-gray-900">€250+</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Multa per fattura in ritardo
+            <p className="text-4xl font-black text-[#0f172a] tracking-tight">
+              €250+
+            </p>
+            <p className="text-xs uppercase font-bold text-gray-400 mt-2 tracking-wider">
+              Sanzione ritardo
             </p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-blue-600">30 sec</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Il cliente compila il Magic Link
+            <p className="text-4xl font-black text-blue-600 tracking-tight">
+              30 sec
+            </p>
+            <p className="text-xs uppercase font-bold text-gray-400 mt-2 tracking-wider">
+              Compilazione Magic Link
             </p>
           </div>
           <div>
-            <p className="text-3xl font-bold text-blue-600">0</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Fatture da compilare a mano
+            <p className="text-4xl font-black text-blue-600 tracking-tight">
+              100%
+            </p>
+            <p className="text-xs uppercase font-bold text-gray-400 mt-2 tracking-wider">
+              Automazione completa
             </p>
           </div>
         </div>
       </section>
 
       {/* Pain points */}
-      <section id="problemi" className="py-20">
+      <section id="problemi" className="py-24 md:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
-            I problemi che risolviamo ogni giorno
-          </h2>
-          <p className="text-gray-500 text-center mb-12 max-w-xl mx-auto">
-            Se vendi online con Stripe o Shopify e devi emettere fattura
-            elettronica, conosci queste situazioni.
-          </p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] tracking-tight">
+              Smetti di perdere tempo (e soldi)
+            </h2>
+            <p className="text-lg text-gray-500 mt-6 max-w-2xl mx-auto font-medium leading-relaxed">
+              Vendere online con Stripe o Shopify è facile, gestire la
+              burocrazia italiana no. Ecco i problemi che diventeranno un
+              ricordo.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
             <PainCard
-              icon="😤"
+              icon={
+                <path
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
               title="Rincorsa al Codice Fiscale"
-              description='Il cliente compra, ma non inserisce il CF. Tu passi ore a mandare email: "Scusi, mi serve il codice fiscale..."'
+              description='Il cliente compra, scappa e non inserisce il CF. Tu passi ore a mandare email infinite: "Scusi, mi serve il codice fiscale..."'
             />
             <PainCard
-              icon="⏰"
-              title="12 giorni e la sanzione"
-              description="La legge ti dà 12 giorni per emettere fattura immediata. Se scadi, la sanzione parte da €250 a fattura."
+              icon={
+                <path
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
+              title="Sanzioni fino a €250"
+              description="Lo sapevi? Hai solo 12 giorni per emettere fattura. Oltre questo termine, arrivano le sanzioni per ogni singola vendita."
             />
             <PainCard
-              icon="🤯"
-              title="Bozze da controllare"
-              description='I connettori attuali creano "bozze" da completare a mano. Risultato: ogni giorno devi controllare cosa è rimasto appeso.'
+              icon={
+                <path
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
+              title="Bozze manuali infinite"
+              description="Dimentica i connettori che creano solo bozze. FiscLink automatizza l'intero ciclo, dall'ordine all'invio allo SDI."
             />
             <PainCard
-              icon="🧾"
-              title="Bollo da calcolare"
-              description="Sei forfettario? Devi aggiungere il bollo da €2 per importi esenti IVA sopra €77.47. Ogni. Singola. Volta."
+              icon={
+                <path
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
+              title="Gestione Bollo €2"
+              description="Sei forfettario o esente IVA? Calcoliamo noi il bollo virtuale sopra i €77.47 e lo aggiungiamo in automatico."
             />
             <PainCard
-              icon="💸"
-              title="Rimborsi e note di credito"
-              description="Un cliente chiede il rimborso su Stripe. Tu devi andare su Fatture in Cloud, cercare la fattura, creare la nota di credito, inviarla..."
+              icon={
+                <path
+                  d="M16 15v-2a4 4 0 00-4-4H4m0 0l4 4m-4-4l4-4"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
+              title="Rimborsi & Note di Credito"
+              description="Un rimborso su Stripe? FiscLink crea automaticamente la nota di credito corrispondente. Senza che tu muova un dito."
             />
             <PainCard
-              icon="📊"
-              title="Riconciliazione impossibile"
-              description="A fine mese devi verificare che il totale Stripe corrisponda al totale fatturato SDI. Un incubo per te e il commercialista."
+              icon={
+                <path
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
+              title="Riconciliazione Automatica"
+              description="Totali Stripe e fatturato SDI finalmente sincronizzati. Il tuo commercialista inizierà a volerti bene davvero."
             />
           </div>
         </div>
       </section>
 
       {/* Come funziona */}
-      <section id="come-funziona" className="py-20 bg-gray-50">
+      <section id="come-funziona" className="py-24 md:py-32 bg-[#f8fafc]">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
-            Come funziona
-          </h2>
-          <p className="text-gray-500 text-center mb-14 max-w-lg mx-auto">
-            Tre passi per automatizzare completamente la tua fatturazione
-            elettronica.
-          </p>
-          <div className="grid md:grid-cols-3 gap-10">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] tracking-tight">
+              Così semplice che fa paura
+            </h2>
+            <p className="text-lg text-gray-500 mt-6 max-w-lg mx-auto font-medium">
+              Zero codice, zero stress. Solo tre passaggi.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            {/* Connecting lines for desktop */}
+            <div className="hidden md:block absolute top-1/2 left-1/4 right-1/4 h-0.5 border-t-2 border-dashed border-blue-200 -z-0"></div>
+
             <Step
               number={1}
-              title="Colleghi Stripe"
-              description="Inserisci le chiavi API nella dashboard. In 2 minuti sei operativo. Zero codice."
+              title="Collega i tuoi account"
+              description="Inserisci le API Key di Stripe e Fatture in Cloud. Bastano due minuti nel nostro wizard guidato."
+              icon={
+                <path
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
             />
             <Step
               number={2}
-              title="Arriva il pagamento"
-              description="Il connettore intercetta il pagamento e valida i dati fiscali. Se mancano, invia un Magic Link al cliente."
+              title="Noi validiamo i dati"
+              description="Ogni volta che vendi, verifichiamo CF e P.IVA. Se mancano, il Magic Link fa il lavoro sporco per te."
+              icon={
+                <path
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
             />
             <Step
               number={3}
-              title="Fattura inviata allo SDI"
-              description="La fattura elettronica viene creata su Fatture in Cloud e inviata allo SDI. Tu non fai nulla."
+              title="Fattura inviata"
+              description="Senza alcun intervento umano, la fattura finisce dritta nello SDI. Tu ricevi solo la notifica del successo."
+              icon={
+                <path
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              }
             />
           </div>
         </div>
       </section>
 
       {/* Magic Link */}
-      <section id="magic-link" className="bg-blue-600 py-20 text-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section
+        id="magic-link"
+        className="py-24 md:py-32 bg-[#0f172a] relative overflow-hidden"
+      >
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-4">
-                ✨ Il Magic Link che ti cambia la vita
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-full mb-6">
+                <span>NEW</span>
+                <span>Automazione Customer-First</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black mb-8 text-white tracking-tight">
+                Il Magic Link che ti
+                <br />
+                <span className="text-blue-500">cambia la vita</span>
               </h2>
-              <p className="text-blue-100 text-lg leading-relaxed mb-6">
-                Se il cliente non inserisce il Codice Fiscale al checkout, il
-                sistema gli invia automaticamente un link per completare i dati.
-                Tu non devi fare nulla.
+              <p className="text-blue-100/70 text-xl leading-relaxed mb-10 font-medium">
+                Clienti che non inseriscono i dati al checkout? Nessun problema.
+                Inviato in automatico, brandizzato, risolve il problema alla
+                radice.
               </p>
-              <ul className="space-y-3">
+              <ul className="space-y-5">
                 {[
-                  "Email automatica, brandizzata con il tuo logo",
-                  "Il cliente compila in 30 secondi da mobile",
-                  "Fino a 2 reminder automatici",
-                  "Fattura parte da sola appena i dati arrivano",
-                  "Presto anche via WhatsApp",
+                  "Email 100% automatica con il tuo logo",
+                  "Form compilabile in 30 secondi da mobile",
+                  "Reminder intelligenti (dopo 2 e 5 giorni)",
+                  "Validazione CF e P.IVA in tempo reale",
+                  "Supporto PEC e Codice Destinatario",
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-blue-50">
-                    <span className="mt-0.5 text-blue-200">✓</span>
+                  <li
+                    key={i}
+                    className="flex items-center gap-4 text-white font-semibold"
+                  >
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
+                      <svg
+                        className="w-3.5 h-3.5 text-blue-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-8 text-left">
-              <p className="font-semibold text-lg mb-3">
-                📧 Email automatica al cliente:
-              </p>
-              <div className="bg-white/10 rounded-lg p-4 mb-4">
-                <p className="text-blue-100 text-sm italic leading-relaxed">
-                  &ldquo;Grazie per l&apos;acquisto! Per emettere la fattura
-                  come richiesto dalla legge italiana, clicca il pulsante qui
-                  sotto e inserisci i tuoi dati fiscali. Ci vogliono 30
-                  secondi.&rdquo;
-                </p>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-blue-600 rounded-[2rem] blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+              <div className="relative bg-[#1e293b] border border-gray-700 rounded-[2rem] p-8 md:p-10 shadow-2xl">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <svg
+                      className="w-6 h-6 text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-white font-bold">Anteprima Email</p>
+                    <p className="text-gray-400 text-xs uppercase tracking-widest font-bold">
+                      Inviata da: Tuo Brand
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 mb-8">
+                  <p className="text-blue-100/90 text-sm leading-relaxed mb-6 italic">
+                    &ldquo;Grazie per l&apos;acquisto! Per completare la fattura
+                    ed evitare sanzioni, clicca qui sotto e inserisci i tuoi
+                    dati fiscali. Bastano 30 secondi.&rdquo;
+                  </p>
+                  <div className="w-full py-4 bg-blue-600 text-white rounded-xl text-center font-bold text-sm shadow-xl shadow-blue-900/40">
+                    Completa i Dati Fiscali →
+                  </div>
+                </div>
+                <div className="flex justify-between items-center px-2">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`w-8 h-8 rounded-full border-2 border-[#1e293b] bg-gray-600`}
+                      ></div>
+                    ))}
+                  </div>
+                  <p className="text-gray-400 text-[10px] font-bold uppercase tracking-tight">
+                    Eseguito 2,4k volte questo mese
+                  </p>
+                </div>
               </div>
-              <div className="bg-blue-500 rounded-lg py-3 text-center font-semibold text-sm">
-                Completa i tuoi dati fiscali →
-              </div>
-              <p className="text-blue-200 text-xs mt-4 text-center">
-                ⏱️ Link valido 7 giorni. Reminder dopo 2 e 5 giorni.
-              </p>
             </div>
           </div>
         </div>
+
+        {/* Background glow */}
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-600 rounded-full blur-[120px] opacity-10"></div>
       </section>
 
       {/* Feature grid */}
-      <section className="py-20">
+      <section className="py-24 md:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
-            Tutto quello che serve al forfettario digitale
-          </h2>
-          <p className="text-gray-500 text-center mb-14 max-w-lg mx-auto">
-            Nato per chi vende prodotti digitali, corsi e SaaS con Stripe.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] tracking-tight">
+              Tutto quello che ti serve
+            </h2>
+            <p className="text-lg text-gray-500 mt-6 max-w-lg mx-auto font-medium">
+              Pensato per chi vende digitale, corsi e SaaS.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureCard
               icon="🧾"
-              title="Bollo automatico"
-              description="Calcola e applica il bollo virtuale da €2 per importi esenti IVA > €77.47. Regime forfettario gestito nativamente."
+              title="Bollo nativo"
+              description="Calcolo e applicazione del bollo virtuale automatico. Perfetto per il regime forfettario."
             />
             <FeatureCard
               icon="✅"
-              title="Validazione fiscale italiana"
-              description="Codice Fiscale con check digit, P.IVA con Luhn, CAP, province. Niente più scarti SDI per dati errati."
+              title="Dati validati"
+              description="Verifica formale di CF, P.IVA, CAP e Province italiane. Zero errori di invio SDI."
             />
             <FeatureCard
               icon="🔐"
-              title="Crittografia API key"
-              description="Le tue chiavi Stripe e Fatture in Cloud sono cifrate con AES-256-GCM. Mai salvate in chiaro."
+              title="Sicurezza bancaria"
+              description="API Key cifrate con AES-256-GCM. Massima protezione per i tuoi dati e quelli dei clienti."
             />
             <FeatureCard
               icon="🔄"
               title="Retry automatici"
-              description="Se qualcosa fallisce (rete, API down), il sistema riprova automaticamente con backoff esponenziale."
+              description="Se le API di Fatture in Cloud sono lente, noi riproviamo finché la fattura non è emessa."
             />
             <FeatureCard
               icon="📱"
-              title="Magic Link mobile-friendly"
-              description="Il tuo cliente compila i dati da telefono in 30 secondi. Pagina brandizzata con il tuo logo e colori."
+              title="Mobile First"
+              description="Tutte le interfacce per i clienti sono ottimizzate per smartphone. Compilazione lampo."
             />
             <FeatureCard
               icon="📊"
-              title="Dashboard in tempo reale"
-              description="Vedi lo stato di ogni fattura: in attesa, inviata, accettata, rifiutata. Tutto in un colpo d'occhio."
+              title="Analytics"
+              description="Vedi in tempo reale quante fatture sono state inviate, accettate o se ci sono errori da gestire."
             />
           </div>
         </div>
       </section>
 
       {/* Per chi è */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-24 md:py-32 bg-[#f8fafc]">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] text-center mb-20 tracking-tight">
             Perfetto per
           </h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
             <AudienceCard
-              emoji="👩‍💻"
-              title="Freelancer & Forfettari"
+              emoji="👨‍💻"
+              title="Freelance & SaaS"
               items={[
-                "Vendi corsi, consulenze, tool digitali",
-                "Regime forfettario RF19",
-                "Poche fatture ma zero tempo da perdere",
+                "Vendi tool o consulenze digitali",
+                "Abbonamenti ricorrenti Stripe",
+                "Zero tempo per compilare fatture",
+              ]}
+            />
+            <AudienceCard
+              emoji="🎓"
+              title="Creator & Academy"
+              items={[
+                "Vendi corsi e prodotti digitali",
+                "Tante piccole vendite B2C",
+                "Gestione automatica bollo €2",
               ]}
             />
             <AudienceCard
               emoji="🛒"
-              title="E-commerce digitali"
+              title="E-commerce Pro"
               items={[
-                "Shopify, WooCommerce, Stripe Checkout",
-                "Tante piccole vendite B2C",
-                "Clienti che non inseriscono il CF",
-              ]}
-            />
-            <AudienceCard
-              emoji="🚀"
-              title="SaaS & Creator"
-              items={[
-                "Abbonamenti ricorrenti su Stripe",
-                "Vendite in Italia e UE",
-                "Il commercialista non capisce Stripe",
+                "Shopify o Custom Checkout",
+                "Volumi medio-alti di ordini",
+                "Riconciliazione fiscale assistita",
               ]}
             />
           </div>
@@ -334,66 +530,63 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20">
+      <section id="pricing" className="py-24 md:py-32 bg-white">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-4">
-            Pricing semplice e trasparente
-          </h2>
-          <p className="text-gray-500 text-center mb-12 max-w-lg mx-auto">
-            Inizia gratis. Nessuna carta di credito richiesta. Upgrade quando ti
-            serve.
-          </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] tracking-tight">
+              Pricing trasparente
+            </h2>
+            <p className="text-lg text-gray-500 mt-6 font-medium">
+              Inizia gratis. Nessuna carta. Upgrade quando cresci.
+            </p>
+          </div>
+          <div className="grid lg:grid-cols-4 gap-8">
             <PriceCard
               name="Starter"
               price="0"
-              description="Per testare e micro-merchant"
+              description="Per iniziare"
               features={[
                 "20 fatture/mese",
                 "Invio SDI base",
-                "Calcolo bollo automatico",
-                "Branding FiscLink",
-                "Supporto email",
+                "Bollo automatico",
+                "Branding base",
               ]}
-              cta="Inizia gratis"
+              cta="Inizia ora"
             />
             <PriceCard
               name="Growth"
               price="19"
-              description="Per e-commerce attivi"
+              description="I più scelti"
               features={[
                 "100 fatture/mese",
-                "Magic Link email illimitato",
-                "Note di credito automatiche",
-                "Error handling base",
-                "Branding personalizzato",
+                "Magic Link illimitato",
+                "Note di credito auto",
+                "Custom Branding",
               ]}
               highlighted
-              cta="Prova 14 giorni gratis"
+              cta="Inizia Prova Gratis"
             />
             <PriceCard
               name="Pro"
               price="49"
-              description="Per brand in crescita"
+              description="Per chi fa sul serio"
               features={[
                 "500 fatture/mese",
-                "Magic Link SMS / WhatsApp",
+                "Supporto Prioritario",
                 "Mapping IVA avanzato",
-                "OSS / gestione EU",
-                "Notifiche errori in tempo reale",
+                "Gestione OSS",
               ]}
-              cta="Prova 14 giorni gratis"
+              cta="Inizia Prova Gratis"
             />
             <PriceCard
-              name="Enterprise"
+              name="Elite"
               price="99"
-              description="Per power seller"
+              description="Senza limiti"
               features={[
-                "Fatture illimitate",
-                "Multi-store / multi-merchant",
-                "Dashboard commercialista",
-                "Riconciliazione Stripe/PayPal",
-                "Supporto prioritario + SLA",
+                "Illimitate",
+                "Multi-account",
+                "Custom Integration",
+                "SLA garantita",
               ]}
               cta="Contattaci"
             />
@@ -402,144 +595,159 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 bg-gray-50">
+      <section id="faq" className="py-24 md:py-32 bg-[#f8fafc]">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-            Domande frequenti
+          <h2 className="text-4xl md:text-5xl font-black text-[#0f172a] text-center mb-20 tracking-tight">
+            FAQ
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             <FaqItem
-              question="Come funziona il Magic Link?"
-              answer="Quando un cliente paga su Stripe senza inserire il Codice Fiscale, il sistema invia automaticamente un'email con un link. Il cliente clicca, compila CF o P.IVA in 30 secondi, e la fattura parte da sola."
+              question="Devo cambiare come vendo su Stripe?"
+              answer="Assolutamente no. FiscLink lavora dietro le quinte. Tu continui a usare Stripe come sempre, noi intercettiamo i pagamenti e creiamo le fatture."
             />
             <FaqItem
-              question="Funziona con il regime forfettario?"
-              answer="Sì! Il connettore gestisce nativamente il regime forfettario (RF19): calcola il bollo virtuale da €2 automaticamente, aggiunge la dicitura obbligatoria e imposta correttamente la natura IVA."
+              question="E se il cliente non compila mai il Magic Link?"
+              answer="Il sistema invia reminder automatici. Se comunque i dati mancano, la fattura resta in 'bozza' nella tua dashboard e puoi decidere come procedere (es. emettere scontrino)."
             />
             <FaqItem
-              question="Le mie chiavi API sono al sicuro?"
-              answer="Assolutamente. Le chiavi Stripe e Fatture in Cloud vengono cifrate con AES-256-GCM prima di essere salvate nel database. Non sono mai memorizzate in chiaro."
+              question="Supportate il forfettario?"
+              answer="È il nostro punto di forza. Gestiamo il bollo virtuale, la natura IVA N2.2 e le diciture obbligatorie in fattura automaticamente."
             />
             <FaqItem
-              question="Cosa succede se il cliente non compila il Magic Link?"
-              answer="Il sistema invia fino a 2 reminder automatici (dopo 2 e 5 giorni). Se il cliente non risponde, la fattura resta in stato 'dati mancanti' e puoi gestirla manualmente dalla dashboard."
-            />
-            <FaqItem
-              question="Posso usarlo con Shopify?"
-              answer="L'integrazione Shopify è in fase di sviluppo e sarà disponibile a breve. Al momento il connettore supporta Stripe come sorgente pagamenti."
-            />
-            <FaqItem
-              question="Come gestisce i rimborsi?"
-              answer="Stiamo implementando la generazione automatica di Note di Credito (TD04) quando Stripe emette un refund. La nota viene inviata allo SDI senza intervento manuale."
-            />
-            <FaqItem
-              question="Devo già avere Fatture in Cloud?"
-              answer="Sì, il connettore usa Fatture in Cloud come gestionale di fatturazione. Ti serve un account con accesso API v2 e il codice azienda."
+              question="Posso annullare in ogni momento?"
+              answer="Sì, non c'è alcun vincolo. Se decidi di smettere, le tue fatture rimangono su Fatture in Cloud come sempre."
             />
           </div>
         </div>
       </section>
 
       {/* CTA finale */}
-      <section className="py-20 bg-blue-600 text-white">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Pronto a eliminare il lavoro manuale?
+      <section className="py-24 md:py-32 bg-[#2563eb] relative overflow-hidden">
+        <div className="max-w-3xl mx-auto px-6 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-black mb-8 text-white tracking-tight">
+            Pronto ad automatizzare?
           </h2>
-          <p className="text-blue-100 text-lg mb-8 max-w-xl mx-auto">
-            Collega Stripe in 2 minuti. La prima fattura parte da sola. Prova
-            gratis per 14 giorni, nessuna carta richiesta.
+          <p className="text-blue-100/80 text-xl mb-12 font-medium">
+            Collega Stripe in 2 minuti. La prima fattura parte da sola.
+            <br />
+            Prova gratis per 14 giorni, nessuna carta richiesta.
           </p>
-          <Link
-            href="/dashboard/onboarding"
-            className="inline-block px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition shadow-lg"
-          >
-            Inizia gratis ora →
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/login"
+              className="px-10 py-5 bg-white text-blue-600 font-black rounded-2xl hover:bg-blue-50 transition shadow-2xl active:scale-95"
+            >
+              Crea account gratis →
+            </Link>
+          </div>
         </div>
+
+        {/* Background blobs */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-12 bg-white">
+      <footer className="bg-white pt-24 pb-12 border-t border-gray-100">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <p className="font-bold text-gray-900 mb-3">⚡ FiscLink</p>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Fatturazione elettronica automatica per PMI italiane che usano
-                Stripe e Shopify.
+          <div className="grid md:grid-cols-4 gap-12 mb-20">
+            <div className="col-span-1 md:col-span-1">
+              <Link href="/" className="flex items-center gap-2 mb-6">
+                <Image src="/fisclink.png" alt="Logo" width={28} height={28} />
+                <span className="text-xl font-black text-[#0f172a]">
+                  FiscLink
+                </span>
+              </Link>
+              <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                Automazione fiscale per chi vende online. Trasformiamo Stripe in
+                fatturato SDI senza fatica.
               </p>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-3 text-sm">
+              <p className="text-[#0f172a] font-bold mb-6 text-sm uppercase tracking-widest">
                 Prodotto
               </p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-4 text-sm font-semibold text-gray-500">
                 <li>
-                  <a href="#come-funziona" className="hover:text-gray-900">
+                  <a
+                    href="#come-funziona"
+                    className="hover:text-blue-600 transition"
+                  >
                     Come funziona
                   </a>
                 </li>
                 <li>
-                  <a href="#pricing" className="hover:text-gray-900">
-                    Prezzi
+                  <a
+                    href="#magic-link"
+                    className="hover:text-blue-600 transition"
+                  >
+                    Magic Link
                   </a>
                 </li>
                 <li>
-                  <a href="#faq" className="hover:text-gray-900">
-                    FAQ
+                  <a href="#pricing" className="hover:text-blue-600 transition">
+                    Pricing
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-3 text-sm">
+              <p className="text-[#0f172a] font-bold mb-6 text-sm uppercase tracking-widest">
                 Risorse
               </p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-4 text-sm font-semibold text-gray-500">
                 <li>
-                  <Link href="/dashboard" className="hover:text-gray-900">
+                  <Link
+                    href="/login"
+                    className="hover:text-blue-600 transition"
+                  >
                     Dashboard
                   </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Documentazione API
+                  <a href="#" className="hover:text-blue-600 transition">
+                    Documentazione
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Guida Setup
+                  <a href="#" className="hover:text-blue-600 transition">
+                    API Status
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900 mb-3 text-sm">Legale</p>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <p className="text-[#0f172a] font-bold mb-6 text-sm uppercase tracking-widest">
+                Legale
+              </p>
+              <ul className="space-y-4 text-sm font-semibold text-gray-500">
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-blue-600 transition">
                     Privacy Policy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Termini di Servizio
+                  <a href="#" className="hover:text-blue-600 transition">
+                    Terms of Service
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-blue-600 transition">
                     Cookie Policy
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-100 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>
-              © {new Date().getFullYear()} FiscLink. Fatturazione elettronica
-              automatica per l&apos;Italia.
+          <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-100 gap-4">
+            <p className="text-gray-400 text-xs font-bold">
+              © {new Date().getFullYear()} FiscLink. Made in Italy 🇮🇹
             </p>
+            <div className="flex gap-6">
+              {/* Social icons placeholders */}
+              <div className="w-5 h-5 bg-gray-100 rounded-full"></div>
+              <div className="w-5 h-5 bg-gray-100 rounded-full"></div>
+            </div>
           </div>
         </div>
       </footer>
@@ -553,15 +761,24 @@ function PainCard({
   title,
   description,
 }: {
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition">
-      <span className="text-3xl">{icon}</span>
-      <h3 className="text-base font-semibold text-gray-900 mt-3">{title}</h3>
-      <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+    <div className="bg-white rounded-2xl border border-gray-100 p-8 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 group hover:-translate-y-1">
+      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 mb-6 group-hover:scale-110 transition-transform">
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {icon}
+        </svg>
+      </div>
+      <h3 className="text-lg font-bold text-[#0f172a] mb-3">{title}</h3>
+      <p className="text-sm text-gray-500 leading-relaxed font-medium">
         {description}
       </p>
     </div>
@@ -572,18 +789,30 @@ function Step({
   number,
   title,
   description,
+  icon,
 }: {
   number: number;
   title: string;
   description: string;
+  icon: React.ReactNode;
 }) {
   return (
-    <div className="text-center">
-      <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-600 font-bold text-xl flex items-center justify-center mx-auto mb-4">
-        {number}
+    <div className="flex flex-col items-center text-center relative z-10 group">
+      <div className="w-20 h-20 rounded-[2rem] bg-white shadow-xl shadow-blue-500/10 flex items-center justify-center mb-8 group-hover:rotate-6 transition-transform border border-gray-50">
+        <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-lg">
+          {number}
+        </div>
+        <svg
+          className="w-10 h-10 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          {icon}
+        </svg>
       </div>
-      <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+      <h3 className="text-xl font-extrabold text-[#0f172a] mb-4">{title}</h3>
+      <p className="text-sm text-gray-500 leading-relaxed font-medium max-w-xs">
         {description}
       </p>
     </div>
@@ -600,10 +829,10 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition">
-      <span className="text-2xl">{icon}</span>
-      <h3 className="text-base font-semibold text-gray-900 mt-3">{title}</h3>
-      <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+    <div className="bg-white rounded-2xl p-8 border border-gray-100 hover:border-blue-100 transition shadow-sm">
+      <span className="text-3xl mb-6 block">{icon}</span>
+      <h3 className="text-lg font-bold text-[#0f172a] mb-3">{title}</h3>
+      <p className="text-sm text-gray-500 leading-relaxed font-medium">
         {description}
       </p>
     </div>
@@ -620,13 +849,15 @@ function AudienceCard({
   items: string[];
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <span className="text-4xl">{emoji}</span>
-      <h3 className="text-lg font-semibold text-gray-900 mt-3">{title}</h3>
-      <ul className="mt-4 space-y-2">
+    <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-md transition">
+      <span className="text-5xl border-b-4 border-blue-500 pb-2 inline-block mb-6">
+        {emoji}
+      </span>
+      <h3 className="text-xl font-black text-[#0f172a] mb-6">{title}</h3>
+      <ul className="space-y-4">
         {items.map((item, i) => (
-          <li key={i} className="text-sm text-gray-500 flex gap-2">
-            <span className="text-blue-500">→</span> {item}
+          <li key={i} className="text-sm font-medium text-gray-500 flex gap-3">
+            <span className="text-blue-500 font-bold shrink-0">→</span> {item}
           </li>
         ))}
       </ul>
@@ -636,14 +867,28 @@ function AudienceCard({
 
 function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
-    <details className="group bg-white rounded-xl border border-gray-200 p-5">
+    <details className="group bg-white rounded-2xl border border-gray-100 p-6 transition-all">
       <summary className="flex items-center justify-between cursor-pointer list-none">
-        <h3 className="text-base font-semibold text-gray-900">{question}</h3>
-        <span className="text-gray-400 group-open:rotate-45 transition-transform text-xl">
-          +
+        <h3 className="text-base font-bold text-[#0f172a]">{question}</h3>
+        <span className="p-1 rounded-full bg-gray-50 text-gray-400 group-open:rotate-45 transition-transform">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              d="M12 4v16m8-8H4"
+            ></path>
+          </svg>
         </span>
       </summary>
-      <p className="text-sm text-gray-500 mt-3 leading-relaxed">{answer}</p>
+      <div className="pt-4 text-sm text-gray-500 font-medium leading-relaxed">
+        {answer}
+      </div>
     </details>
   );
 }
@@ -666,42 +911,47 @@ function PriceCard({
   const isFree = price === "0";
   return (
     <div
-      className={`rounded-xl border p-6 flex flex-col ${
+      className={`rounded-[2.5rem] border p-8 flex flex-col transition-all duration-300 ${
         highlighted
-          ? "border-blue-600 ring-2 ring-blue-600 bg-blue-50"
-          : "border-gray-200 bg-white"
+          ? "border-blue-600 bg-white ring-8 ring-blue-50 shadow-2xl scale-105 z-10"
+          : "border-gray-100 bg-white hover:border-gray-200"
       }`}
     >
       {highlighted && (
-        <span className="inline-block px-2 py-0.5 bg-blue-600 text-white text-xs font-semibold rounded-full mb-3">
+        <span className="inline-block px-3 py-1 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full mb-6 w-fit">
           Più popolare
         </span>
       )}
-      <h3 className="text-lg font-semibold text-gray-900">{name}</h3>
-      <p className="text-sm text-gray-500">{description}</p>
-      <p className="mt-4">
+      <h3 className="text-xl font-black text-[#0f172a] tracking-tight">
+        {name}
+      </h3>
+      <p className="text-sm font-medium text-gray-400 mt-2">{description}</p>
+      <div className="mt-8 flex items-baseline gap-1">
         {isFree ? (
-          <span className="text-3xl font-bold text-gray-900">Gratis</span>
+          <span className="text-4xl font-black text-[#0f172a]">Gratis</span>
         ) : (
           <>
-            <span className="text-3xl font-bold text-gray-900">€{price}</span>
-            <span className="text-gray-500">/mese</span>
+            <span className="text-4xl font-black text-[#0f172a]">€{price}</span>
+            <span className="text-gray-400 font-bold">/mese</span>
           </>
         )}
-      </p>
-      <ul className="mt-6 space-y-2 flex-1">
+      </div>
+      <ul className="mt-10 space-y-4 flex-1">
         {features.map((f, i) => (
-          <li key={i} className="text-sm text-gray-600 flex gap-2">
-            <span className="text-green-500 shrink-0">✓</span> {f}
+          <li
+            key={i}
+            className="text-sm font-semibold text-gray-600 flex gap-3"
+          >
+            <span className="text-green-500 font-bold shrink-0">✓</span> {f}
           </li>
         ))}
       </ul>
       <Link
-        href="/dashboard/onboarding"
-        className={`block mt-6 text-center py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+        href="/login"
+        className={`block mt-10 text-center py-4 rounded-2xl text-sm font-bold transition-all active:scale-95 ${
           highlighted
-            ? "bg-blue-600 text-white hover:bg-blue-700"
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xl shadow-blue-500/30"
+            : "bg-gray-50 text-gray-700 hover:bg-gray-100"
         }`}
       >
         {cta}

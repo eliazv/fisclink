@@ -29,6 +29,14 @@ export async function sendMagicLinkEmail(
     const fromEmail = process.env.EMAIL_FROM ?? "noreply@fisclink.it";
     const fromName = params.merchantName || "FiscLink";
 
+    if (process.env.NODE_ENV === "development") {
+      console.log("==========================================");
+      console.log("DEV MODE: Magic Link Cliente (Email)");
+      console.log(`To:    ${params.to}`);
+      console.log(`URL:   ${params.magicLinkUrl}`);
+      console.log("==========================================");
+    }
+
     const { data, error } = await getResend().emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [params.to],
@@ -37,6 +45,7 @@ export async function sendMagicLinkEmail(
     });
 
     if (error) {
+      console.error("Resend Error (Magic Link Email):", error);
       return { success: false, error: error.message };
     }
 
@@ -58,6 +67,14 @@ export async function sendMagicLinkReminder(
     const fromEmail = process.env.EMAIL_FROM ?? "noreply@fisclink.it";
     const fromName = params.merchantName || "FiscLink";
 
+    if (process.env.NODE_ENV === "development") {
+      console.log("==========================================");
+      console.log("DEV MODE: Reminder Magic Link (Email)");
+      console.log(`To:    ${params.to}`);
+      console.log(`URL:   ${params.magicLinkUrl}`);
+      console.log("==========================================");
+    }
+
     const { data, error } = await getResend().emails.send({
       from: `${fromName} <${fromEmail}>`,
       to: [params.to],
@@ -66,6 +83,7 @@ export async function sendMagicLinkReminder(
     });
 
     if (error) {
+      console.error("Resend Error (Reminder):", error);
       return { success: false, error: error.message };
     }
 
