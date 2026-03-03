@@ -357,77 +357,22 @@ export default function SettingsPage() {
         )}
       </Section>
 
-      {/* Shopify */}
+      {/* Shopify — disabilitato per MVP */}
       <Section
         title="🛍️ Shopify"
-        description="Collega il tuo shop Shopify per ricevere ordini e creare fatture."
-        status={statusFlags.hasShopifyKey ? "Collegato" : undefined}
+        description="Integrazione Shopify in arrivo. Resta sintonizzato!"
+        disabled
       >
-        <Field
-          label="Shop Domain"
-          placeholder="myshop.myshopify.com"
-          value={settings.shopifyShopDomain}
-          onChange={(v) => setSettings((s) => ({ ...s, shopifyShopDomain: v }))}
-        />
-        <Field
-          label="Admin API Access Token"
-          placeholder={
-            statusFlags.hasShopifyKey
-              ? "••••••• (già configurato)"
-              : "shpat_..."
-          }
-          type="password"
-          value={settings.shopifyApiKey}
-          onChange={(v) => setSettings((s) => ({ ...s, shopifyApiKey: v }))}
-        />
-        <Field
-          label="Webhook Secret"
-          placeholder="Shopify webhook signing secret"
-          type="password"
-          value={settings.shopifyWebhookSecret}
-          onChange={(v) =>
-            setSettings((s) => ({ ...s, shopifyWebhookSecret: v }))
-          }
-        />
+        <p className="text-sm text-slate-400 italic">Prossimamente disponibile.</p>
       </Section>
 
-      {/* WooCommerce */}
+      {/* WooCommerce — disabilitato per MVP */}
       <Section
         title="🛒 WooCommerce"
-        description="Collega il tuo store WooCommerce per sincronizzare ordini."
-        status={statusFlags.hasWooCommerceKey ? "Collegato" : undefined}
+        description="Integrazione WooCommerce in arrivo. Resta sintonizzato!"
+        disabled
       >
-        <Field
-          label="Store URL"
-          placeholder="https://mionegozio.com"
-          value={settings.wooStoreUrl}
-          onChange={(v) => setSettings((s) => ({ ...s, wooStoreUrl: v }))}
-        />
-        <Field
-          label="Consumer Key"
-          placeholder={
-            statusFlags.hasWooCommerceKey
-              ? "••••••• (già configurata)"
-              : "ck_..."
-          }
-          type="password"
-          value={settings.wooConsumerKey}
-          onChange={(v) => setSettings((s) => ({ ...s, wooConsumerKey: v }))}
-        />
-        <Field
-          label="Consumer Secret"
-          placeholder="cs_..."
-          type="password"
-          value={settings.wooConsumerSecret}
-          onChange={(v) => setSettings((s) => ({ ...s, wooConsumerSecret: v }))}
-        />
-        <Field
-          label="Webhook Secret"
-          placeholder="Webhook signing secret"
-          type="password"
-          value={settings.wooWebhookSecret}
-          onChange={(v) => setSettings((s) => ({ ...s, wooWebhookSecret: v }))}
-        />
+        <p className="text-sm text-slate-400 italic">Prossimamente disponibile.</p>
       </Section>
 
       {/* Regime Fiscale */}
@@ -599,22 +544,28 @@ function Section({
   title,
   description,
   status,
+  disabled,
   children,
 }: {
   title: string;
   description: string;
   status?: string;
+  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className={`bg-white rounded-xl border border-gray-200 p-6 ${disabled ? "opacity-60 pointer-events-none" : ""}`}>
       <div className="flex items-center justify-between mb-1">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {status && (
+        {disabled ? (
+          <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+            Prossimamente
+          </span>
+        ) : status ? (
           <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
             ✓ {status}
           </span>
-        )}
+        ) : null}
       </div>
       <p className="text-sm text-gray-500 mb-4">{description}</p>
       <div className="space-y-4">{children}</div>

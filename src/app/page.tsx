@@ -731,19 +731,19 @@ export default function Home() {
               </p>
               <ul className="space-y-4 text-sm font-semibold text-gray-500">
                 <li>
-                  <a href="#" className="hover:text-blue-600 transition">
+                  <Link href="/privacy" className="hover:text-blue-600 transition">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-blue-600 transition">
-                    Terms of Service
-                  </a>
+                  <Link href="/terms" className="hover:text-blue-600 transition">
+                    Termini di Servizio
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-blue-600 transition">
+                  <Link href="/privacy#cookie" className="hover:text-blue-600 transition">
                     Cookie Policy
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </div>

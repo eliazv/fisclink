@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  ArrowUpRight,
   ArrowRight,
   Activity,
   Plug,
@@ -98,16 +97,12 @@ export default function DashboardPage() {
               detail: data.hasFicToken ? "Token configurato" : "Token mancante",
             },
             shopify: {
-              connected: data.hasShopifyKey,
-              detail: data.hasShopifyKey
-                ? `Shop: ${data.shopifyShopDomain ?? "configurato"}`
-                : "Non configurato",
+              connected: false,
+              detail: "Prossimamente",
             },
             woocommerce: {
-              connected: data.hasWooCommerceKey,
-              detail: data.hasWooCommerceKey
-                ? `Store: ${data.wooCommerceStoreUrl ?? "configurato"}`
-                : "Non configurato",
+              connected: false,
+              detail: "Prossimamente",
             },
           });
         }
@@ -163,28 +158,24 @@ export default function DashboardPage() {
           label="Fatture Totali"
           value={stats?.totalInvoices ?? 0}
           icon={FileText}
-          trend="+12%"
         />
         <StatCard
           label="Accettate SDI"
           value={stats?.accepted ?? 0}
           icon={CheckCircle2}
           color="emerald"
-          trend="+5%"
         />
         <StatCard
           label="Dati in Sospeso"
           value={stats?.pendingData ?? 0}
           icon={Clock}
           color="amber"
-          trend="-2%"
         />
         <StatCard
           label="Errori SDI"
           value={stats?.errors ?? 0}
           icon={AlertTriangle}
           color="rose"
-          trend="0%"
         />
       </div>
 
@@ -206,9 +197,6 @@ export default function DashboardPage() {
                     {(stats?.totalRevenue ?? 0).toLocaleString("it-IT", {
                       minimumFractionDigits: 2,
                     })}
-                  </span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1 text-sm bg-emerald-400/10 px-2 py-1 rounded-lg">
-                    <ArrowUpRight className="w-4 h-4" /> 15%
                   </span>
                 </div>
               </div>
@@ -374,13 +362,15 @@ export default function DashboardPage() {
                 />
                 <IntegrationRow
                   label="Shopify"
-                  connected={integrations.shopify.connected}
-                  detail={integrations.shopify.detail}
+                  connected={false}
+                  detail="Prossimamente"
+                  disabled
                 />
                 <IntegrationRow
                   label="WooCommerce"
-                  connected={integrations.woocommerce.connected}
-                  detail={integrations.woocommerce.detail}
+                  connected={false}
+                  detail="Prossimamente"
+                  disabled
                 />
               </div>
             ) : (
@@ -417,18 +407,24 @@ function IntegrationRow({
   label,
   connected,
   detail,
+  disabled,
 }: {
   label: string;
   connected: boolean;
   detail: string;
+  disabled?: boolean;
 }) {
   return (
     <div
-      className={`p-4 rounded-[1.25rem] border transition-all ${connected ? "bg-white border-slate-100" : "bg-slate-50 border-slate-100 border-dashed"}`}
+      className={`p-4 rounded-[1.25rem] border transition-all ${disabled ? "bg-slate-50/50 border-slate-100 border-dashed opacity-60" : connected ? "bg-white border-slate-100" : "bg-slate-50 border-slate-100 border-dashed"}`}
     >
       <div className="flex items-center justify-between mb-1">
         <p className="text-sm font-black text-[#0f172a]">{label}</p>
-        {connected ? (
+        {disabled ? (
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full">
+            Prossimamente
+          </span>
+        ) : connected ? (
           <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">
             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>{" "}
             Online
