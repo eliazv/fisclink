@@ -3,10 +3,19 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "FiscLink – Fatturazione elettronica automatica da Stripe e Shopify",
+  title: "FiscLink – Fatturazione Elettronica Automatica da Stripe e Shopify",
   description:
-    "Trasforma ogni pagamento Stripe in una fattura elettronica SDI. Magic Link per raccogliere codice fiscale e P.IVA. Bollo automatico per forfettari. Prova gratis.",
+    "Trasforma i pagamenti Stripe in fatture elettroniche SDI automaticamente. Magic Link per recupero Codice Fiscale, bollo €2 forfettari e PEC. Prova FiscLink gratis.",
+  keywords:
+    "fatturazione elettronica stripe, connettore fatture in cloud stripe, fatturazione automatica shopify sdi, recupero codice fiscale stripe, bollo 2 euro fatture in cloud, fattura elettronica forfettari stripe",
   alternates: { canonical: "/" },
+  openGraph: {
+    title:
+      "FiscLink – La soluzione definitiva per la fatturazione elettronica Stripe",
+    description:
+      "Smetti di rincorrere i clienti per il Codice Fiscale. Automatizza l'invio allo SDI con FiscLink.",
+    type: "website",
+  },
 };
 
 export default function Home() {

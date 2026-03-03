@@ -84,7 +84,7 @@ export default function LoginPage() {
                 onClick={() => setStatus("idle")}
                 className="mt-6 text-sm font-semibold text-emerald-700 hover:underline"
               >
-                Prova con un'altra email
+                Prova con un&apos;altra email
               </button>
             </div>
           ) : (
