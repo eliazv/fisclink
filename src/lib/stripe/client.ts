@@ -47,7 +47,10 @@ export function verifyStripeWebhook(
 }
 
 /**
- * Estrae i dati rilevanti da un evento checkout.session.completed o payment_intent.succeeded.
+ * Dati normalizzati che FiscLink usa per aprire il workflow fiscale.
+ *
+ * Nota: il campo paymentIntentId è mantenuto per compatibilità storica, ma per
+ * eventi Stripe Billing può contenere anche l'id della Stripe Invoice.
  */
 export interface StripeOrderData {
   paymentIntentId: string;
@@ -69,6 +72,14 @@ export interface StripeOrderData {
   } | null;
 }
 
+function getFiscalCode(metadata: Record<string, string>): string | null {
+  return metadata.fiscal_code || metadata.codice_fiscale || metadata.cf || null;
+}
+
+function getVatNumber(metadata: Record<string, string>): string | null {
+  return metadata.vat_number || metadata.partita_iva || metadata.piva || null;
+}
+
 /**
  * Estrae i dati dell'ordine da un PaymentIntent completato.
  */
@@ -76,13 +87,6 @@ export function extractOrderFromPaymentIntent(
   paymentIntent: Stripe.PaymentIntent,
 ): StripeOrderData {
   const metadata = (paymentIntent.metadata ?? {}) as Record<string, string>;
-
-  // Cerca dati fiscali nei metadata di Stripe
-  const fiscalCode =
-    metadata.fiscal_code || metadata.codice_fiscale || metadata.cf || null;
-
-  const vatNumber =
-    metadata.vat_number || metadata.partita_iva || metadata.piva || null;
 
   return {
     paymentIntentId: paymentIntent.id,
@@ -95,8 +99,8 @@ export function extractOrderFromPaymentIntent(
     currency: paymentIntent.currency.toUpperCase(),
     description: paymentIntent.description,
     metadata,
-    fiscalCode,
-    vatNumber,
+    fiscalCode: getFiscalCode(metadata),
+    vatNumber: getVatNumber(metadata),
     address: null,
   };
 }
@@ -108,13 +112,6 @@ export function extractOrderFromCheckoutSession(
   session: Stripe.Checkout.Session,
 ): StripeOrderData {
   const metadata = (session.metadata ?? {}) as Record<string, string>;
-
-  const fiscalCode =
-    metadata.fiscal_code || metadata.codice_fiscale || metadata.cf || null;
-
-  const vatNumber =
-    metadata.vat_number || metadata.partita_iva || metadata.piva || null;
-
   const customerDetails = session.customer_details;
 
   return {
@@ -128,8 +125,8 @@ export function extractOrderFromCheckoutSession(
     currency: (session.currency ?? "EUR").toUpperCase(),
     description: null,
     metadata,
-    fiscalCode,
-    vatNumber,
+    fiscalCode: getFiscalCode(metadata),
+    vatNumber: getVatNumber(metadata),
     address: customerDetails?.address
       ? {
           line1: customerDetails.address.line1 ?? null,
@@ -137,6 +134,39 @@ export function extractOrderFromCheckoutSession(
           state: customerDetails.address.state ?? null,
           postalCode: customerDetails.address.postal_code ?? null,
           country: customerDetails.address.country ?? null,
+        }
+      : null,
+  };
+}
+
+/**
+ * Estrae i dati da una Stripe Invoice pagata.
+ *
+ * Questo è l'evento più utile per abbonamenti Stripe Billing: preserva l'id
+ * della invoice ricorrente, l'importo effettivamente pagato e le righe fattura.
+ */
+export function extractOrderFromInvoice(invoice: Stripe.Invoice): StripeOrderData {
+  const metadata = (invoice.metadata ?? {}) as Record<string, string>;
+  const firstLine = invoice.lines?.data?.[0];
+  const customerAddress = invoice.customer_address;
+
+  return {
+    paymentIntentId: invoice.id,
+    customerEmail: invoice.customer_email ?? null,
+    customerName: invoice.customer_name ?? null,
+    amount: invoice.amount_paid ?? invoice.total ?? 0,
+    currency: (invoice.currency ?? "EUR").toUpperCase(),
+    description: firstLine?.description ?? invoice.description ?? null,
+    metadata,
+    fiscalCode: getFiscalCode(metadata),
+    vatNumber: getVatNumber(metadata),
+    address: customerAddress
+      ? {
+          line1: customerAddress.line1 ?? null,
+          city: customerAddress.city ?? null,
+          state: customerAddress.state ?? null,
+          postalCode: customerAddress.postal_code ?? null,
+          country: customerAddress.country ?? null,
         }
       : null,
   };
