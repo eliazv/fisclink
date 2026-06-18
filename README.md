@@ -1,170 +1,145 @@
-# Connettore Fiscale
+# FiscLink
 
-**Middleware SaaS** che collega piattaforme di pagamento (Stripe, Shopify) con la fatturazione elettronica italiana (SDI) tramite Fatture in Cloud.
+Open source Stripe fiscal bridge for Italy.
 
-## 🏗️ Architettura
+FiscLink aiuta chi usa Stripe in Italia a raccogliere, validare e normalizzare i dati fiscali necessari per la fatturazione elettronica italiana.
 
-```
-Stripe Webhook → API Route → Job Queue (BullMQ) → Worker
-                                                     ├── Dati fiscali OK → Crea fattura su FiC → Invia a SDI
-                                                     └── Dati mancanti  → Magic Link → Cliente compila → Re-enqueue
-```
+> Stato del progetto: early preview / developer tool. Non è un gestionale fiscale completo e non sostituisce commercialista, consulente fiscale o provider accreditato SdI.
 
-### Stack Tecnologico
+## Cosa fa
 
-| Layer        | Tecnologia                          |
-| ------------ | ----------------------------------- |
-| Framework    | Next.js 15 (App Router, TypeScript) |
-| Database     | PostgreSQL + Prisma ORM             |
-| Job Queue    | BullMQ + Redis                      |
-| Pagamenti    | Stripe SDK                          |
-| Fatturazione | Fatture in Cloud API v2             |
-| Email        | Resend                              |
-| Crittografia | AES-256-GCM (API key nel DB)        |
-| Styling      | Tailwind CSS                        |
-| Validazione  | Zod                                 |
+- Riceve eventi Stripe da webhook.
+- Crea una coda di pagamenti/fatture da completare fiscalmente.
+- Recupera dati fiscali mancanti tramite Magic Link inviato al cliente.
+- Valida formalmente Codice Fiscale, Partita IVA, CAP, provincia, codice SDI e PEC.
+- Tiene traccia dello stato di ogni documento: dati mancanti, pronto, esportato, inviato tramite integrazione opzionale.
+- Può integrarsi con Fatture in Cloud per creare e inviare documenti elettronici.
 
-## 📁 Struttura Progetto
+## Cosa non fa, almeno per ora
 
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── webhooks/stripe/    # Webhook Stripe (checkout, payment_intent)
-│   │   ├── magic-link/[token]/ # GET dati link, POST dati fiscali
-│   │   ├── invoices/           # CRUD fatture
-│   │   ├── dashboard/stats/    # KPI dashboard
-│   │   └── settings/           # Configurazione merchant
-│   ├── dashboard/              # Dashboard merchant
-│   │   ├── page.tsx            # Home con KPI e setup guide
-│   │   ├── invoices/           # Lista fatture con filtri
-│   │   └── settings/           # Configurazione API, regime, branding
-│   ├── magic/[token]/          # Pagina pubblica Magic Link
-│   └── page.tsx                # Landing page
-├── lib/
-│   ├── db.ts                   # Prisma client singleton
-│   ├── crypto.ts               # AES-256-GCM encrypt/decrypt
-│   ├── bollo.ts                # Calcolo imposta di bollo
-│   ├── email.ts                # Template email Magic Link
-│   ├── validators/fiscal.ts    # Validazione CF, P.IVA, CAP, Provincia
-│   ├── stripe/client.ts        # Client Stripe + estrazione ordini
-│   ├── fatture-in-cloud/client.ts  # Client FiC API v2
-│   ├── queue/index.ts          # Code BullMQ + helper enqueue
-│   └── workers/
-│       ├── invoice.worker.ts   # Processo fattura: valida → crea → invia SDI
-│       └── magiclink.worker.ts # Invio email Magic Link + reminder
-prisma/
-└── schema.prisma               # Schema completo DB
+- Non invia direttamente allo SdI con un canale proprietario.
+- Non sostituisce Fatture in Cloud, A-Cube, Aruba, Fattura24 o altri provider fiscali.
+- Non garantisce correttezza fiscale, regime IVA, OSS, reverse charge o casi complessi.
+- Non è pensato come prodotto SaaS commerciale pronto all'uso.
+
+## Posizionamento
+
+Il progetto nasce per risolvere un problema pratico:
+
+```txt
+Stripe incassa il pagamento, ma spesso mancano dati fiscali italiani completi.
+FiscLink raccoglie e valida quei dati, poi li prepara per il tuo flusso di fatturazione.
 ```
 
-## 🚀 Quick Start
+L'obiettivo è restare piccolo, ispezionabile e self-hosted.
+
+## Flusso consigliato
+
+```txt
+Stripe invoice.paid / checkout.session.completed
+        ↓
+FiscLink webhook
+        ↓
+Validazione dati cliente
+        ↓
+┌───────────────────────────┬────────────────────────────────┐
+│ Dati completi             │ Dati mancanti                  │
+│ → Pronto per export/invio │ → Magic Link al cliente        │
+└───────────────────────────┴────────────────────────────────┘
+        ↓
+Export / integrazione opzionale con Fatture in Cloud
+```
+
+## Stack
+
+| Layer | Tecnologia |
+| --- | --- |
+| Framework | Next.js, App Router, TypeScript |
+| Database | PostgreSQL + Prisma |
+| Queue | BullMQ + Redis |
+| Pagamenti | Stripe SDK |
+| Email | Resend |
+| Crittografia | AES-256-GCM per chiavi API |
+| Validazione | Zod + validatori fiscali custom |
+
+## Quick start locale
 
 ### Prerequisiti
 
-- Node.js 18+
+- Node.js 20+
 - PostgreSQL
 - Redis
-- Account Stripe (test mode)
-- Account Fatture in Cloud (API v2)
-- Account Resend
+- Account Stripe in test mode
+- Account Resend, opzionale in development
+- Account Fatture in Cloud, solo se vuoi provare l'integrazione FiC
 
 ### Setup
 
 ```bash
-# 1. Clona e installa dipendenze
 git clone <repo-url>
-cd connettore-fiscale
+cd fisclink
 npm install
-
-# 2. Configura environment
 cp .env.example .env
-# Compila .env con i tuoi valori
-
-# 3. Crea database e applica schema
 npx prisma migrate dev --name init
-
-# 4. Avvia Redis (se non già in esecuzione)
-# Docker: docker run -d -p 6379:6379 redis
-
-# 5. Avvia in development
 npm run dev
-
-# 6. In un altro terminale, avvia i worker
-npx tsx src/lib/workers/start.ts
 ```
 
-### Stripe CLI (per test webhook)
+In un secondo terminale:
 
 ```bash
-stripe listen --forward-to localhost:3000/api/webhooks/stripe?merchant=YOUR_MERCHANT_ID
+npm run worker
 ```
 
-## 🔑 Funzionalità Chiave
-
-### Magic Link
-
-Quando un pagamento Stripe arriva ma mancano i dati fiscali del cliente (CF, P.IVA), il sistema:
-
-1. Crea un **Magic Link** univoco
-2. Invia email al cliente con link branded del merchant
-3. Il cliente compila i dati fiscali su una pagina pubblica
-4. Il sistema ri-processa automaticamente la fattura
-5. Se il cliente non risponde, invia fino a 2 **reminder** automatici
-
-### Imposta di Bollo
-
-Gestione automatica del bollo virtuale (€2.00) per:
-
-- Regime forfettario (RF19) con importi esenti IVA > €77.47
-- Politica configurabile: addebito al cliente o assorbimento
-
-### Validazione Fiscale
-
-- **Codice Fiscale**: algoritmo completo con check digit
-- **Partita IVA**: validazione Luhn
-- **CAP**: formato 5 cifre
-- **Provincia**: verifica esistenza sigla
-- **Codice SDI**: formato 7 caratteri alfanumerici
-
-### Crittografia
-
-Le API key dei merchant (Stripe, Fatture in Cloud) sono cifrate con **AES-256-GCM** prima di essere salvate nel database, usando chiave derivata con scrypt.
-
-## 📊 Modello Dati
-
-| Modello     | Descrizione                                                |
-| ----------- | ---------------------------------------------------------- |
-| `Merchant`  | Tenant con configurazione, API key cifrate, regime fiscale |
-| `Customer`  | Dati anagrafici e fiscali del cliente                      |
-| `Invoice`   | Fattura con lifecycle completo (PENDING → ACCEPTED)        |
-| `MagicLink` | Token per recupero dati fiscali con scadenza e reminder    |
-| `AuditLog`  | Log granulare di ogni azione per merchant                  |
-
-## 🔧 Comandi Utili
+Per testare i webhook Stripe in locale:
 
 ```bash
-# Development
-npm run dev              # Avvia Next.js in dev mode
-npm run build            # Build produzione
-npm run start            # Avvia in produzione
-
-# Database
-npx prisma studio        # GUI per esplorare il DB
-npx prisma migrate dev   # Applica migrazioni in dev
-npx prisma generate      # Rigenera Prisma Client
-
-# Worker
-npx tsx src/lib/workers/start.ts  # Avvia worker BullMQ
+stripe listen --forward-to "localhost:3000/api/webhooks/stripe?merchant=YOUR_MERCHANT_ID"
 ```
 
-## 📝 Piano di Pricing
+## Script utili
 
-| Piano        | Prezzo   | Fatture/mese | Funzionalità                                    |
-| ------------ | -------- | ------------ | ----------------------------------------------- |
-| **Starter**  | €15/mese | 50           | 1 integrazione, Magic Link, email support       |
-| **Pro**      | €29/mese | 200          | 2 integrazioni, bollo automatico, priorità      |
-| **Business** | €59/mese | Illimitate   | Tutte le integrazioni, API, onboarding dedicato |
+```bash
+npm run dev          # Avvia Next.js
+npm run worker       # Avvia i worker BullMQ
+npm run build        # Build produzione
+npm run lint         # ESLint
+npm run test         # Test Vitest
+npm run db:studio    # Prisma Studio
+```
 
-## 📜 Licenza
+## Roadmap pragmatica
 
-Proprietario - Tutti i diritti riservati.
+### v0.1 — Core Stripe fiscal data
+
+- [x] Login magic link merchant
+- [x] Webhook Stripe base
+- [x] Magic Link cliente
+- [x] Validazione fiscale italiana formale
+- [x] Dashboard stato documenti
+- [ ] Supporto completo a `invoice.paid` per abbonamenti Stripe Billing
+- [ ] Export CSV/JSON per commercialista
+- [ ] `.env.example` e documentazione self-hosting
+
+### v0.2 — Export e integrazioni
+
+- [ ] Export XML FatturaPA o payload intermedio documentato
+- [ ] Integrazione Fatture in Cloud più robusta
+- [ ] Gestione stato invio e ricevute
+- [ ] Test end-to-end con Stripe CLI
+
+### v0.3 — Casi avanzati
+
+- [ ] Note di credito da refund Stripe
+- [ ] Mapping IVA configurabile
+- [ ] Provider fiscali aggiuntivi
+- [ ] Supporto OSS/estero documentato
+
+## Disclaimer fiscale
+
+Questo software è fornito come strumento tecnico. La responsabilità sulla correttezza, emissione, trasmissione e conservazione delle fatture resta dell'utilizzatore e dei suoi consulenti/provider fiscali.
+
+Prima di usarlo in produzione, verifica il flusso con commercialista o consulente fiscale.
+
+## Licenza
+
+MIT. Vedi `LICENSE`.
