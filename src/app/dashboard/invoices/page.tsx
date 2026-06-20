@@ -7,6 +7,19 @@
 import { Suspense, useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 interface Invoice {
   id: string;
   status: string;
@@ -32,16 +45,16 @@ interface Invoice {
   createdAt: string;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  PENDING_DATA: "bg-yellow-100 text-yellow-800",
-  VALIDATING: "bg-blue-100 text-blue-800",
-  READY: "bg-indigo-100 text-indigo-800",
-  SENDING: "bg-blue-100 text-blue-800",
-  SENT: "bg-cyan-100 text-cyan-800",
-  ACCEPTED: "bg-green-100 text-green-800",
-  REJECTED: "bg-red-100 text-red-800",
-  ERROR: "bg-orange-100 text-orange-800",
-  FAILED: "bg-red-100 text-red-800",
+const STATUS_VARIANTS: Record<string, "secondary" | "destructive" | "default"> = {
+  PENDING_DATA: "secondary",
+  VALIDATING: "secondary",
+  READY: "secondary",
+  SENDING: "secondary",
+  SENT: "secondary",
+  ACCEPTED: "default",
+  REJECTED: "destructive",
+  ERROR: "destructive",
+  FAILED: "destructive",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -75,8 +88,8 @@ export default function InvoicesPageWrapper() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
         </div>
       }
     >
@@ -109,8 +122,8 @@ function InvoicesPage() {
       const res = await fetch(`/api/invoices?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setInvoices(data.invoices ?? []);
-        setTotal(data.total ?? 0);
+        setInvoices(data.data ?? []);
+        setTotal(data.pagination?.total ?? 0);
       }
     } catch (err) {
       console.error("Errore caricamento fatture:", err);
@@ -120,10 +133,10 @@ function InvoicesPage() {
   }, [filter, search, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-filter-change, no external sync alternative here
     fetchInvoices();
   }, [fetchInvoices]);
 
-  // Debounce search
   useEffect(() => {
     const timeout = setTimeout(() => {
       setPage(1);
@@ -133,219 +146,203 @@ function InvoicesPage() {
 
   const totalPages = Math.ceil(total / 20);
 
+  const exportHref = useCallback(
+    (format: "csv" | "json") => {
+      const params = new URLSearchParams();
+      params.set("format", format);
+      if (filter) params.set("status", filter);
+      if (search) params.set("search", search);
+      return `/api/invoices/export?${params.toString()}`;
+    },
+    [filter, search],
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fatture</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold">Fatture</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             {total > 0
               ? `${total} fatture totali`
               : "Tutte le fatture elettroniche gestite dal connettore"}
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={exportHref("csv")}>Esporta CSV</a>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href={exportHref("json")}>Esporta JSON</a>
+          </Button>
+        </div>
       </div>
 
-      {/* Filtri */}
       <div className="flex flex-wrap gap-3">
-        <input
+        <Input
           type="text"
           placeholder="Cerca per email, nome, ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 min-w-[200px] rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="min-w-[200px] flex-1"
         />
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex flex-wrap gap-1">
           {[
             [null, "Tutte"],
-            ["PENDING_DATA", "⏳ Dati mancanti"],
-            ["ACCEPTED", "✅ Accettate"],
-            ["SENT", "📨 Inviate"],
-            ["ERROR", "⚠️ Errori"],
-            ["REJECTED", "❌ Rifiutate"],
+            ["PENDING_DATA", "Dati mancanti"],
+            ["ACCEPTED", "Accettate"],
+            ["SENT", "Inviate"],
+            ["ERROR", "Errori"],
+            ["REJECTED", "Rifiutate"],
           ].map(([value, label]) => (
-            <button
+            <Button
               key={String(value)}
+              variant={filter === value ? "secondary" : "outline"}
+              size="sm"
               onClick={() => {
                 setFilter(value);
                 setPage(1);
               }}
-              className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                filter === value
-                  ? "bg-blue-100 text-blue-700 border border-blue-200"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-              }`}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
-      {/* Tabella */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <Card className="overflow-hidden py-0">
         {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+          <div className="flex h-32 items-center justify-center">
+            <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
           </div>
         ) : invoices.length === 0 ? (
-          <div className="px-6 py-16 text-center text-gray-400">
-            <p className="text-5xl mb-3">📄</p>
-            <p className="text-lg font-medium text-gray-600">
+          <div className="px-6 py-16 text-center text-muted-foreground">
+            <p className="text-lg font-medium">
               {filter
                 ? "Nessuna fattura con questo filtro"
                 : "Nessuna fattura ancora"}
             </p>
-            <p className="text-sm mt-1">
+            <p className="mt-1 text-sm">
               {filter
                 ? "Prova a cambiare i filtri o la ricerca."
                 : "Le fatture appariranno qui non appena riceverai un pagamento."}
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 text-left">
-                  <th className="px-4 py-3 font-medium text-gray-500">Stato</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">
-                    Cliente
-                  </th>
-                  <th className="px-4 py-3 font-medium text-gray-500">
-                    Importo
-                  </th>
-                  <th className="px-4 py-3 font-medium text-gray-500">
-                    N. Fattura
-                  </th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Bollo</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Data</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">
-                    Errore
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {invoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          STATUS_COLORS[inv.status] ??
-                          "bg-gray-100 text-gray-800"
-                        }`}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Stato</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Importo</TableHead>
+                <TableHead>N. Fattura</TableHead>
+                <TableHead>Bollo</TableHead>
+                <TableHead>Data</TableHead>
+                <TableHead>Errore</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((inv) => (
+                <TableRow key={inv.id}>
+                  <TableCell>
+                    <Badge variant={STATUS_VARIANTS[inv.status] ?? "secondary"}>
+                      {STATUS_LABELS[inv.status] ?? inv.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <p className="font-medium">{inv.customer?.name ?? "N/A"}</p>
+                    <p className="text-xs text-muted-foreground">{inv.customer?.email}</p>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    € {Number(inv.amount).toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {inv.invoiceNumber ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    {inv.bolloApplied ? (
+                      <Badge variant="outline">2,00€</Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {new Date(inv.createdAt).toLocaleDateString("it-IT")}
+                  </TableCell>
+                  <TableCell className="max-w-[250px] whitespace-normal">
+                    {(inv.lastError || inv.rejectionReason) && (
+                      <button
+                        onClick={() =>
+                          setSelectedError(
+                            inv.id === selectedError ? null : inv.id,
+                          )
+                        }
+                        className="text-left text-xs text-destructive hover:underline"
+                        title={inv.lastError ?? inv.rejectionReason ?? ""}
                       >
-                        {STATUS_LABELS[inv.status] ?? inv.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {inv.customer?.name ?? "N/A"}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {inv.customer?.email}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-medium">
-                      € {Number(inv.amount).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {inv.invoiceNumber ?? "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      {inv.bolloApplied ? (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-                          2,00€
-                        </span>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(inv.createdAt).toLocaleDateString("it-IT")}
-                    </td>
-                    <td className="px-4 py-3 max-w-[250px]">
-                      {(inv.lastError || inv.rejectionReason) && (
-                        <button
-                          onClick={() =>
-                            setSelectedError(
-                              inv.id === selectedError ? null : inv.id,
-                            )
-                          }
-                          className="text-xs text-red-600 hover:underline text-left"
-                          title={inv.lastError ?? inv.rejectionReason ?? ""}
-                        >
-                          {inv.errorCode ? `[${inv.errorCode}] ` : ""}
-                          {(inv.lastError ?? inv.rejectionReason ?? "").slice(
-                            0,
-                            50,
+                        {inv.errorCode ? `[${inv.errorCode}] ` : ""}
+                        {(inv.lastError ?? inv.rejectionReason ?? "").slice(0, 50)}
+                        ...
+                      </button>
+                    )}
+                    {selectedError === inv.id &&
+                      (inv.lastError || inv.rejectionReason) && (
+                        <div className="mt-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                          <p className="mb-1 text-xs font-medium text-destructive">
+                            Dettaglio errore:
+                          </p>
+                          <p className="mb-2 text-xs text-destructive/90">
+                            {inv.lastError ?? inv.rejectionReason}
+                          </p>
+                          {inv.errorCode && SDI_ERROR_HELP[inv.errorCode] && (
+                            <>
+                              <p className="mb-1 text-xs font-medium">Come risolvere:</p>
+                              <p className="text-xs text-muted-foreground">
+                                {SDI_ERROR_HELP[inv.errorCode]}
+                              </p>
+                            </>
                           )}
-                          ...
-                        </button>
+                          {!inv.errorCode && inv.status === "PENDING_DATA" && (
+                            <p className="text-xs font-medium text-primary">
+                              Un Magic Link è stato inviato al cliente per raccogliere i dati
+                              fiscali.
+                            </p>
+                          )}
+                        </div>
                       )}
-                      {/* Pannello errore espanso con spiegazione e azione */}
-                      {selectedError === inv.id &&
-                        (inv.lastError || inv.rejectionReason) && (
-                          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-xs text-red-800 font-medium mb-1">
-                              Dettaglio errore:
-                            </p>
-                            <p className="text-xs text-red-700 mb-2">
-                              {inv.lastError ?? inv.rejectionReason}
-                            </p>
-                            {inv.errorCode && SDI_ERROR_HELP[inv.errorCode] && (
-                              <>
-                                <p className="text-xs text-red-800 font-medium mb-1">
-                                  💡 Come risolvere:
-                                </p>
-                                <p className="text-xs text-red-600">
-                                  {SDI_ERROR_HELP[inv.errorCode]}
-                                </p>
-                              </>
-                            )}
-                            {!inv.errorCode &&
-                              inv.status === "PENDING_DATA" && (
-                                <p className="text-xs text-blue-600 font-medium">
-                                  → Un Magic Link è stato inviato al cliente per
-                                  raccogliere i dati fiscali.
-                                </p>
-                              )}
-                          </div>
-                        )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
 
-        {/* Paginazione */}
         {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
+          <CardContent className="flex items-center justify-between border-t py-3">
+            <p className="text-xs text-muted-foreground">
               Pagina {page} di {totalPages} ({total} fatture)
             </p>
             <div className="flex gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
               >
                 ← Indietro
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-50"
               >
                 Avanti →
-              </button>
+              </Button>
             </div>
-          </div>
+          </CardContent>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

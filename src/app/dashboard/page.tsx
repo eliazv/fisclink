@@ -16,9 +16,14 @@ import {
   ArrowRight,
   Activity,
   Plug,
-  Gift,
   Plus,
+  TrendingUp,
+  type LucideIcon,
 } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Stats {
   totalInvoices: number;
@@ -28,7 +33,7 @@ interface Stats {
   errors: number;
   totalRevenue: number;
 }
-// ... (manteniamo le altre interfacce)
+
 interface ActivityData {
   id: string;
   action: string;
@@ -117,12 +122,12 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <div className="relative w-12 h-12">
-          <div className="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-[#0f172a] rounded-full border-t-transparent animate-spin"></div>
+      <div className="flex h-96 flex-col items-center justify-center gap-4">
+        <div className="relative h-12 w-12">
+          <div className="absolute inset-0 rounded-full border-4 border-muted" />
+          <div className="absolute inset-0 animate-spin rounded-full border-4 border-foreground border-t-transparent" />
         </div>
-        <p className="text-slate-400 font-medium animate-pulse text-sm uppercase tracking-widest">
+        <p className="animate-pulse text-sm font-medium uppercase tracking-widest text-muted-foreground">
           Caricamento
         </p>
       </div>
@@ -130,35 +135,24 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 animate-in fade-in duration-700">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="mx-auto w-full max-w-[1400px] space-y-8">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-4xl font-black text-[#0f172a] tracking-tight">
-            Panoramica
-          </h1>
-          <p className="text-slate-500 mt-2 font-medium">
+          <h1 className="text-3xl font-black tracking-tight">Panoramica</h1>
+          <p className="mt-1 text-muted-foreground">
             Monitora lo stato delle tue fatture automatiche in tempo reale.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href="/dashboard/invoices"
-            className="flex items-center gap-2 px-5 py-3 bg-[#0f172a] text-white rounded-2xl font-bold text-sm shadow-xl shadow-slate-200 hover:scale-[1.02] transition-transform active:scale-95"
-          >
-            <Plus className="w-4 h-4" />
+        <Button asChild>
+          <Link href="/dashboard/invoices">
+            <Plus className="h-4 w-4" />
             Nuova Fattura
           </Link>
-        </div>
+        </Button>
       </div>
 
-      {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          label="Fatture Totali"
-          value={stats?.totalInvoices ?? 0}
-          icon={FileText}
-        />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Fatture Totali" value={stats?.totalInvoices ?? 0} icon={FileText} />
         <StatCard
           label="Accettate SDI"
           value={stats?.accepted ?? 0}
@@ -171,141 +165,108 @@ export default function DashboardPage() {
           icon={Clock}
           color="amber"
         />
-        <StatCard
-          label="Errori SDI"
-          value={stats?.errors ?? 0}
-          icon={AlertTriangle}
-          color="rose"
-        />
+        <StatCard label="Errori SDI" value={stats?.errors ?? 0} icon={AlertTriangle} color="rose" />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-        <div className="xl:col-span-8 space-y-10">
-          {/* Revenue Highlight Card */}
-          <div className="relative overflow-hidden bg-[#0f172a] rounded-[2.5rem] p-10 text-white shadow-2xl shadow-slate-200 group">
-            <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:text-white/10 transition-colors">
-              <TrendingUp className="w-64 h-64 -mr-16 -mt-16 rotate-12" />
-            </div>
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div>
-                <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mb-3">
-                  Volume Fatturato Totale
-                </p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black tracking-tighter">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-8">
+          <Card className="overflow-hidden bg-foreground text-background">
+            <CardContent className="relative">
+              <TrendingUp className="absolute -top-10 right-0 h-48 w-48 -rotate-12 text-background/5" />
+              <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                <div>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-background/60">
+                    Volume Fatturato Totale
+                  </p>
+                  <span className="text-4xl font-black tracking-tighter">
                     €{" "}
                     {(stats?.totalRevenue ?? 0).toLocaleString("it-IT", {
                       minimumFractionDigits: 2,
                     })}
                   </span>
                 </div>
+                <Button asChild variant="secondary">
+                  <Link href="/dashboard/reports">
+                    Analisi Dettagliata <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
               </div>
-              <Link
-                href="/dashboard/reports"
-                className="flex items-center gap-3 px-6 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl font-bold transition-all border border-white/10 text-sm"
-              >
-                Analisi Dettagliata <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Critical Invoices Section */}
-          <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
-            <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-rose-50/30">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0 border-b pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-rose-500" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#0f172a]">
-                    Errori SDI Critici
-                  </h3>
-                  <p className="text-xs text-rose-600/70 font-medium">
+                  <CardTitle>Errori SDI Critici</CardTitle>
+                  <p className="text-xs text-muted-foreground">
                     Richiedono la tua attenzione immediata
                   </p>
                 </div>
               </div>
-              <Link
-                href="/dashboard/invoices?filter=ERROR"
-                className="text-xs font-black text-rose-500 hover:text-rose-600 tracking-wider uppercase bg-rose-500/10 px-4 py-2 rounded-xl transition-colors"
-              >
-                Vedi Tutti
-              </Link>
-            </div>
-            <div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/dashboard/invoices?filter=ERROR">Vedi Tutti</Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="px-0">
               {errorInvoices.length === 0 ? (
-                <div className="p-16 text-center">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <p className="text-slate-400 font-medium italic">
-                    ✓ Nessun errore SDI rilevato. Ottimo lavoro!
+                <div className="p-12 text-center">
+                  <CheckCircle2 className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Nessun errore SDI rilevato. Ottimo lavoro!
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-50">
+                <div className="divide-y">
                   {errorInvoices.map((inv) => (
                     <div
                       key={inv.id}
-                      className="px-8 py-6 hover:bg-slate-50/80 group transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      className="flex flex-col justify-between gap-4 px-6 py-4 hover:bg-muted/50 sm:flex-row sm:items-center"
                     >
-                      <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-white border border-transparent group-hover:border-slate-100 transition-colors">
-                          <FileText className="w-5 h-5 text-slate-400" />
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                          <FileText className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-sm font-black text-[#0f172a]">
-                            {inv.customer?.name ||
-                              inv.customer?.email ||
-                              "Cliente Sconosciuto"}
+                          <p className="text-sm font-bold">
+                            {inv.customer?.name || inv.customer?.email || "Cliente Sconosciuto"}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] font-bold text-slate-400 font-mono">
+                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                            <span className="font-mono">
                               #{inv.sourceId.slice(0, 10).toUpperCase()}
                             </span>
-                            <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
-                            <span className="text-xs font-bold text-rose-600 uppercase tracking-tighter">
+                            <span>•</span>
+                            <span className="font-bold uppercase text-destructive">
                               {inv.errorCode ?? "Errore Invio"}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right hidden sm:block">
-                          <p className="text-xs text-slate-400 font-medium">
-                            Motivazione
-                          </p>
-                          <p className="text-xs text-[#0f172a] font-bold max-w-[200px] truncate">
-                            {inv.lastError || "Nessun dettaglio specificato"}
-                          </p>
-                        </div>
-                        <Link
-                          href={`/dashboard/invoices?search=${inv.sourceId}`}
-                          className="px-6 py-3 rounded-xl bg-white border border-slate-200 text-xs font-bold text-[#0f172a] hover:bg-[#0f172a] hover:text-white transition-all shadow-sm group-hover:shadow-md active:scale-95"
-                        >
-                          Risolvi
-                        </Link>
-                      </div>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard/invoices?search=${inv.sourceId}`}>Risolvi</Link>
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="xl:col-span-4 space-y-10">
-          {/* Activity Timeline */}
-          <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-              <h2 className="text-lg font-black text-[#0f172a] tracking-tight flex items-center gap-2">
-                <Activity className="w-5 h-5 text-slate-400" /> Attività
-              </h2>
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            </div>
-            <div className="flex-1 overflow-y-auto max-h-[400px] p-2">
+        <div className="space-y-6 xl:col-span-4">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0 border-b pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-muted-foreground" /> Attività
+              </CardTitle>
+              <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            </CardHeader>
+            <CardContent className="max-h-[400px] overflow-y-auto px-2">
               {activities.length === 0 ? (
-                <div className="p-10 text-center text-slate-300 text-sm font-medium italic">
+                <div className="p-8 text-center text-sm text-muted-foreground">
                   Nessuna attività registrata.
                 </div>
               ) : (
@@ -313,90 +274,71 @@ export default function DashboardPage() {
                   {activities.map((activity) => (
                     <div
                       key={activity.id}
-                      className="px-6 py-4 rounded-[1.5rem] hover:bg-slate-50 transition-colors flex items-start gap-4"
+                      className="flex items-start gap-3 rounded-xl px-4 py-3 hover:bg-muted/50"
                     >
                       <div
-                        className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
+                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
                           activity.level === "ERROR"
-                            ? "bg-rose-500"
+                            ? "bg-destructive"
                             : activity.level === "WARN"
                               ? "bg-amber-500"
-                              : "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+                              : "bg-emerald-500"
                         }`}
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-[#0f172a] leading-relaxed">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold leading-relaxed">
                           {activity.details ?? activity.action}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium mt-1">
-                          {new Date(activity.createdAt).toLocaleTimeString(
-                            "it-IT",
-                            { hour: "2-digit", minute: "2-digit" },
-                          )}{" "}
-                          • Inviata
+                        <p className="mt-1 text-[10px] text-muted-foreground">
+                          {new Date(activity.createdAt).toLocaleTimeString("it-IT", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          {/* Integrations Module */}
-          <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-md">
-            <h3 className="text-lg font-black text-[#0f172a] tracking-tight mb-6 flex items-center gap-3">
-              <Plug className="w-5 h-5 text-slate-400" /> Integrazioni
-            </h3>
-            {integrations ? (
-              <div className="space-y-4">
-                <IntegrationRow
-                  label="Stripe"
-                  connected={integrations.stripe.connected}
-                  detail={integrations.stripe.detail}
-                />
-                <IntegrationRow
-                  label="Fatture in Cloud"
-                  connected={integrations.fic.connected}
-                  detail={integrations.fic.detail}
-                />
-                <IntegrationRow
-                  label="Shopify"
-                  connected={false}
-                  detail="Prossimamente"
-                  disabled
-                />
-                <IntegrationRow
-                  label="WooCommerce"
-                  connected={false}
-                  detail="Prossimamente"
-                  disabled
-                />
-              </div>
-            ) : (
-              <div className="animate-pulse space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-10 bg-slate-50 rounded-xl" />
-                ))}
-              </div>
-            )}
-
-            <div className="mt-8 pt-8 border-t border-slate-50">
-              <div className="bg-indigo-50/50 rounded-2xl p-4 flex items-start gap-4 group cursor-pointer hover:bg-indigo-50 transition-colors">
-                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                  <Gift className="w-5 h-5 text-indigo-500" />
+          <Card>
+            <CardHeader className="border-b pb-4">
+              <CardTitle className="flex items-center gap-2">
+                <Plug className="h-5 w-5 text-muted-foreground" /> Integrazioni
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {integrations ? (
+                <div className="space-y-3">
+                  <IntegrationRow
+                    label="Stripe"
+                    connected={integrations.stripe.connected}
+                    detail={integrations.stripe.detail}
+                  />
+                  <IntegrationRow
+                    label="Fatture in Cloud"
+                    connected={integrations.fic.connected}
+                    detail={integrations.fic.detail}
+                  />
+                  <IntegrationRow label="Shopify" connected={false} detail="Prossimamente" disabled />
+                  <IntegrationRow
+                    label="WooCommerce"
+                    connected={false}
+                    detail="Prossimamente"
+                    disabled
+                  />
                 </div>
-                <div>
-                  <h4 className="text-indigo-900 font-black text-xs uppercase tracking-wider mb-1">
-                    Promo Beta
-                  </h4>
-                  <p className="text-indigo-700/80 text-[11px] font-medium leading-[1.5]">
-                    Primi 100 merchant: 3 mesi di piano Growth gratis.
-                  </p>
+              ) : (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-10 rounded-xl bg-muted" />
+                  ))}
                 </div>
-              </div>
-            </div>
-          </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
@@ -416,31 +358,24 @@ function IntegrationRow({
 }) {
   return (
     <div
-      className={`p-4 rounded-[1.25rem] border transition-all ${disabled ? "bg-slate-50/50 border-slate-100 border-dashed opacity-60" : connected ? "bg-white border-slate-100" : "bg-slate-50 border-slate-100 border-dashed"}`}
+      className={`rounded-xl border p-3 ${disabled ? "border-dashed opacity-60" : connected ? "" : "border-dashed"}`}
     >
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-black text-[#0f172a]">{label}</p>
+      <div className="mb-1 flex items-center justify-between">
+        <p className="text-sm font-bold">{label}</p>
         {disabled ? (
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full">
-            Prossimamente
-          </span>
+          <Badge variant="secondary">Prossimamente</Badge>
         ) : connected ? (
-          <span className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-full">
-            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>{" "}
-            Online
-          </span>
+          <Badge className="bg-emerald-500 text-white">Online</Badge>
         ) : (
           <Link
             href="/dashboard/settings"
-            className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline px-2 py-0.5"
+            className="text-xs font-bold text-primary hover:underline"
           >
             Configura
           </Link>
         )}
       </div>
-      <p className="text-[11px] text-slate-400 font-medium truncate">
-        {detail}
-      </p>
+      <p className="truncate text-xs text-muted-foreground">{detail}</p>
     </div>
   );
 }
@@ -450,72 +385,32 @@ function StatCard({
   value,
   icon: Icon,
   color = "slate",
-  trend,
 }: {
   label: string;
   value: number;
-  icon: any;
+  icon: LucideIcon;
   color?: "slate" | "amber" | "emerald" | "rose";
-  trend?: string;
 }) {
   const colors = {
-    slate: "text-slate-900 bg-slate-50",
-    amber: "text-amber-600 bg-amber-50",
-    emerald: "text-emerald-600 bg-emerald-50",
-    rose: "text-rose-600 bg-rose-50",
-  };
-
-  const ringColors = {
-    slate: "ring-slate-100",
-    amber: "ring-amber-100",
-    emerald: "ring-emerald-100",
-    rose: "ring-rose-100",
+    slate: "text-foreground bg-muted",
+    amber: "text-amber-600 bg-amber-50 dark:bg-amber-950/30",
+    emerald: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30",
+    rose: "text-rose-600 bg-rose-50 dark:bg-rose-950/30",
   };
 
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden">
-      <div className="relative z-10 flex items-center justify-between">
-        <div
-          className={`w-12 h-12 rounded-2xl ${colors[color]} flex items-center justify-center ring-[12px] ${ringColors[color]} transition-all group-hover:scale-110`}
-        >
-          <Icon className="w-6 h-6" />
+    <Card>
+      <CardContent className="flex items-center justify-between">
+        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${colors[color]}`}>
+          <Icon className="h-6 w-6" />
         </div>
         <div className="text-right">
-          <span className="text-3xl font-black text-[#0f172a] tracking-tighter">
-            {value}
-          </span>
-          {trend && (
-            <p
-              className={`text-[10px] font-bold mt-1 ${trend.startsWith("+") ? "text-emerald-500" : trend === "0%" ? "text-slate-400" : "text-rose-500"}`}
-            >
-              {trend} vs ieri
-            </p>
-          )}
+          <span className="text-3xl font-black tracking-tighter">{value}</span>
+          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+            {label}
+          </p>
         </div>
-      </div>
-      <p className="text-xs font-bold text-slate-400 mt-6 tracking-wide uppercase">
-        {label}
-      </p>
-    </div>
-  );
-}
-
-function TrendingUp(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
+      </CardContent>
+    </Card>
   );
 }
