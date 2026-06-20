@@ -202,6 +202,7 @@ Opzioni:
 - `checkout.session.completed`
 - `payment_intent.succeeded`
 - `charge.refunded`
+- `invoice.paid` (solo se usi Stripe Billing per abbonamenti)
 
 **Shopify:**
 

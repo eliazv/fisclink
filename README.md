@@ -114,6 +114,7 @@ stripe listen --forward-to "localhost:3000/api/webhooks/stripe?merchant=YOUR_MER
 ```bash
 pnpm dev             # Avvia Next.js
 pnpm worker          # Avvia i worker BullMQ
+pnpm queue-board     # Dashboard di monitoraggio code (bull-board, richiede QUEUE_BOARD_PASSWORD)
 pnpm build           # Build produzione
 pnpm lint            # ESLint
 pnpm test            # Test Vitest
@@ -129,7 +130,7 @@ pnpm db:studio       # Prisma Studio
 - [x] Magic Link cliente
 - [x] Validazione fiscale italiana formale
 - [x] Dashboard stato documenti
-- [ ] Supporto completo a `invoice.paid` per abbonamenti Stripe Billing
+- [x] Supporto a `invoice.paid` per abbonamenti Stripe Billing
 - [x] Export CSV/JSON per commercialista
 - [x] `.env.example` e documentazione self-hosting
 
@@ -168,4 +169,4 @@ Prima di usarlo in produzione, verifica il flusso con commercialista o consulent
 
 ## Licenza
 
-MIT. Vedi `LICENSE`.
+MIT. Vedi `LICENSE.md`.

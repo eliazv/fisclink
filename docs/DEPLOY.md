@@ -123,6 +123,7 @@ railway run pnpm exec prisma migrate deploy
    - `checkout.session.completed`
    - `payment_intent.succeeded`
    - `charge.refunded`
+   - `invoice.paid` (solo se usi Stripe Billing per abbonamenti)
 5. Copia il Webhook Signing Secret (`whsec_...`)
 6. Aggiornalo nelle variabili Railway come `STRIPE_WEBHOOK_SECRET`
 

@@ -5,8 +5,10 @@
  *
  * Riceve gli eventi da Stripe e avvia il workflow di fatturazione.
  * Gestisce:
+ * - invoice.paid (prioritario per abbonamenti Stripe Billing)
  * - checkout.session.completed
  * - payment_intent.succeeded
+ * - charge.refunded
  *
  * Importante: usa il raw body per verificare la firma.
  */
@@ -17,6 +19,7 @@ import { prisma } from "@/lib/db";
 import { decryptApiKey } from "@/lib/crypto";
 import {
   extractOrderFromCheckoutSession,
+  extractOrderFromInvoice,
   extractOrderFromPaymentIntent,
   type StripeOrderData,
 } from "@/lib/stripe/client";
@@ -95,6 +98,22 @@ export async function POST(request: NextRequest) {
     let orderData: StripeOrderData | null = null;
 
     switch (event.type) {
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        // Solo abbonamenti Stripe Billing: gli invoice "one-off" sono già
+        // coperti da checkout.session.completed o payment_intent.succeeded,
+        // gestirli anche qui creerebbe una fattura duplicata per lo stesso pagamento.
+        const isSubscriptionBilling =
+          invoice.billing_reason === "subscription_create" ||
+          invoice.billing_reason === "subscription_cycle" ||
+          invoice.billing_reason === "subscription_update" ||
+          invoice.billing_reason === "subscription_threshold";
+        if (isSubscriptionBilling) {
+          orderData = extractOrderFromInvoice(invoice);
+        }
+        break;
+      }
+
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         // Solo se il pagamento è stato completato
