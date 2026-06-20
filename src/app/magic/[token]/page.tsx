@@ -145,6 +145,20 @@ export default function MagicLinkPage() {
   };
 
   const brandColor = data?.merchant?.brandColor ?? "#2563eb";
+  const setCustomerType = (customerType: FormData["customerType"]) => {
+    setForm((current) => ({
+      ...current,
+      customerType,
+      country:
+        customerType === "FOREIGN"
+          ? current.country === "IT"
+            ? ""
+            : current.country
+          : current.country || "IT",
+      sdiCode: customerType === "BUSINESS" ? current.sdiCode : "",
+      pecEmail: customerType === "BUSINESS" ? current.pecEmail : "",
+    }));
+  };
 
   // --- States ---
 
@@ -182,7 +196,8 @@ export default function MagicLinkPage() {
             Dati ricevuti!
           </h1>
           <p className="text-gray-500">
-            Grazie! La tua fattura elettronica verrà emessa a breve.
+            Grazie! I tuoi dati fiscali sono stati ricevuti e saranno preparati
+            per il flusso di fatturazione del venditore.
           </p>
           {data.merchant && (
             <p className="text-sm text-gray-400 mt-4">{data.merchant.name}</p>
@@ -204,6 +219,7 @@ export default function MagicLinkPage() {
           style={{ backgroundColor: brandColor }}
         >
           {data.merchant?.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- Merchant logo URLs are user-configured and cannot be constrained to static Next Image domains.
             <img
               src={data.merchant.logoUrl}
               alt={data.merchant.name}
@@ -221,7 +237,8 @@ export default function MagicLinkPage() {
             Completa i tuoi dati fiscali
           </h2>
           <p className="text-sm text-gray-500 mb-6">
-            Per emettere la fattura elettronica, abbiamo bisogno di alcuni dati.
+            Servono alcuni dati per preparare correttamente il documento fiscale
+            collegato al pagamento.
             {data.invoice && (
               <span className="block mt-1 font-medium text-gray-700">
                 Importo: {data.invoice.amount.toFixed(2)}{" "}
@@ -261,9 +278,7 @@ export default function MagicLinkPage() {
                   <button
                     key={value}
                     type="button"
-                    onClick={() =>
-                      setForm((f) => ({ ...f, customerType: value }))
-                    }
+                    onClick={() => setCustomerType(value)}
                     className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${
                       form.customerType === value
                         ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -581,38 +596,45 @@ export default function MagicLinkPage() {
 
             {/* SDI / PEC (opzionali, per aziende italiane) */}
             {form.customerType === "BUSINESS" && form.country === "IT" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Codice SDI
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={7}
-                    value={form.sdiCode}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        sdiCode: e.target.value.toUpperCase(),
-                      }))
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0000000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    PEC
-                  </label>
-                  <input
-                    type="email"
-                    value={form.pecEmail}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, pecEmail: e.target.value }))
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="azienda@pec.it"
-                  />
+              <div className="space-y-3">
+                <p className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                  Per aziende italiane puoi indicare il Codice SDI a 7
+                  caratteri oppure una PEC. Se non hai un codice destinatario,
+                  usa 0000000 e indica la PEC se disponibile.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Codice SDI
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={7}
+                      value={form.sdiCode}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          sdiCode: e.target.value.toUpperCase(),
+                        }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm uppercase focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0000000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      PEC
+                    </label>
+                    <input
+                      type="email"
+                      value={form.pecEmail}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, pecEmail: e.target.value }))
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="azienda@pec.it"
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -628,8 +650,8 @@ export default function MagicLinkPage() {
             </button>
 
             <p className="text-xs text-gray-400 text-center">
-              I tuoi dati saranno usati esclusivamente per l&apos;emissione
-              della fattura elettronica.
+              I tuoi dati saranno usati esclusivamente per preparare il
+              documento fiscale relativo a questo acquisto.
             </p>
           </form>
         </div>

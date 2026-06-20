@@ -39,6 +39,14 @@ interface Invoice {
     fiscalCode: string | null;
     vatNumber: string | null;
   } | null;
+  magicLink: {
+    id: string;
+    isCompleted: boolean;
+    isExpired: boolean;
+    emailSentAt: string | null;
+    expiresAt: string;
+    createdAt: string;
+  } | null;
   sentAt: string | null;
   acceptedAt: string | null;
   rejectedAt: string | null;
@@ -109,6 +117,9 @@ function InvoicesPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [selectedError, setSelectedError] = useState<string | null>(null);
+  const [resendingInvoiceId, setResendingInvoiceId] = useState<string | null>(
+    null,
+  );
 
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
@@ -145,6 +156,27 @@ function InvoicesPage() {
   }, [search]);
 
   const totalPages = Math.ceil(total / 20);
+
+  const resendMagicLink = async (invoiceId: string) => {
+    setResendingInvoiceId(invoiceId);
+    try {
+      const response = await fetch(
+        `/api/invoices/${invoiceId}/magic-link/resend`,
+        { method: "POST" },
+      );
+
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.error ?? "Reinvio non riuscito");
+      }
+
+      await fetchInvoices();
+    } catch (error) {
+      console.error("Errore reinvio Magic Link:", error);
+    } finally {
+      setResendingInvoiceId(null);
+    }
+  };
 
   const exportHref = useCallback(
     (format: "csv" | "json") => {
@@ -238,6 +270,7 @@ function InvoicesPage() {
                 <TableHead>N. Fattura</TableHead>
                 <TableHead>Bollo</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>Magic Link</TableHead>
                 <TableHead>Errore</TableHead>
               </TableRow>
             </TableHeader>
@@ -268,6 +301,43 @@ function InvoicesPage() {
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(inv.createdAt).toLocaleDateString("it-IT")}
+                  </TableCell>
+                  <TableCell>
+                    {inv.status === "PENDING_DATA" && inv.magicLink ? (
+                      <div className="space-y-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={resendingInvoiceId === inv.id}
+                          onClick={() => resendMagicLink(inv.id)}
+                        >
+                          {resendingInvoiceId === inv.id
+                            ? "Reinvio..."
+                            : "Reinvia"}
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Scade il{" "}
+                          {new Date(inv.magicLink.expiresAt).toLocaleDateString(
+                            "it-IT",
+                          )}
+                        </p>
+                      </div>
+                    ) : inv.status === "PENDING_DATA" ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={resendingInvoiceId === inv.id}
+                        onClick={() => resendMagicLink(inv.id)}
+                      >
+                        {resendingInvoiceId === inv.id
+                          ? "Invio..."
+                          : "Invia link"}
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="max-w-[250px] whitespace-normal">
                     {(inv.lastError || inv.rejectionReason) && (

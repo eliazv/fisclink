@@ -4,7 +4,7 @@
 // Gestisce la logica per vendite B2C intra-UE (regime OSS)
 // e vendite extra-UE con i relativi obblighi di fatturazione.
 
-import { EU_COUNTRIES, isEUCountry } from "./validators/vies";
+import { isEUCountry } from "./validators/vies";
 
 export type SaleType =
   | "DOMESTIC" // Vendita Italia → Italia

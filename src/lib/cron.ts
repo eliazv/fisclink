@@ -115,7 +115,6 @@ export async function cleanupExpired() {
   });
 
   // Reset contatore fatture mensile (subscription)
-  const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   await prisma.subscription.updateMany({
     where: {
       resetAt: { lt: now },

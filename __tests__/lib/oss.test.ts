@@ -8,7 +8,6 @@ import {
   calculateOSSReport,
   getOSSInvoiceNote,
   EU_VAT_RATES,
-  type SaleType,
 } from "@/lib/oss";
 
 describe("classifySale", () => {

@@ -11,6 +11,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "doctor": "pnpm exec tsx scripts/doctor.ts",
     "worker": "pnpm exec tsx src/lib/workers/start.ts",
     "queue-board": "pnpm exec tsx src/lib/queue-board/start.ts",
     "db:migrate": "pnpm exec prisma migrate deploy",

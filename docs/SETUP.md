@@ -53,7 +53,7 @@ Verifica che i container siano attivi:
 
 ```bash
 docker compose ps
-# postgres (porta 5432) e redis (porta 6379) devono essere "running"
+# postgres (porta host 55432) e redis (porta 6379) devono essere "running"
 ```
 
 ### 2.3 Configura .env
@@ -65,7 +65,7 @@ cp .env.example .env
 Modifica `.env` con i tuoi valori. I minimi per partire sono:
 
 ```env
-DATABASE_URL="postgresql://fisclink:fisclink@localhost:5432/fisclink?schema=public"
+DATABASE_URL="postgresql://connettore:connettore_dev_2026@localhost:55432/connettore_fiscale?schema=public"
 REDIS_URL="redis://localhost:6379"
 ENCRYPTION_SECRET="$(openssl rand -base64 32)"
 AUTH_SECRET="$(openssl rand -base64 32)"
@@ -82,6 +82,12 @@ EMAIL_FROM="FiscLink <noreply@tuodominio.it>"
 ```bash
 pnpm exec prisma migrate dev --name init
 pnpm exec prisma generate
+```
+
+Puoi verificare ambiente, database e Redis con:
+
+```bash
+pnpm run doctor
 ```
 
 ### 2.5 Avvia l'app

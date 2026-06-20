@@ -2,7 +2,7 @@
 // Test: Rate Limiter
 // ============================================================
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { checkRateLimit, type RateLimitConfig } from "@/lib/rate-limit";
 
 describe("Rate Limiter", () => {

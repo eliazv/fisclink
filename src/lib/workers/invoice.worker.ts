@@ -225,7 +225,7 @@ async function createAndSendInvoice(
           });
           return;
         }
-      } catch (viesError) {
+      } catch {
         // Fail-open: se VIES è irraggiungibile, procediamo
         await logAudit(merchant.id, invoice.id, "VIES_VALIDATION_SKIPPED", {
           reason: "VIES non raggiungibile, si procede con validazione formale",
@@ -266,7 +266,6 @@ async function createAndSendInvoice(
     const skipSDI = !ossClassification.sendToSDI;
 
     // --- TaxMapping: cerca mapping personalizzato ---
-    let ficVatId: number | undefined;
     let actualVatNature = invoice.vatNature;
 
     if (ossClassification.vatNature) {
@@ -286,7 +285,6 @@ async function createAndSendInvoice(
     });
 
     if (taxMapping) {
-      ficVatId = taxMapping.ficVatId;
       if (taxMapping.ficVatNature) {
         actualVatNature = taxMapping.ficVatNature;
       }

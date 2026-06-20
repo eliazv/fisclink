@@ -30,8 +30,8 @@ Needed work:
 
 - improve private/business/foreign customer flow;
 - prefill from Stripe customer details;
-- add clearer help text for SDI and PEC;
-- allow dashboard resend;
+- [x] add clearer help text for SDI and PEC;
+- [x] allow dashboard resend;
 - test expiration and completion states.
 
 ## Priority 4 - Export before provider integrations

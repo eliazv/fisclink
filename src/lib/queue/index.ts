@@ -9,7 +9,7 @@
  * - magiclink:reminder → Reminder per magic link non completati
  */
 
-import { Queue, Worker, Job } from "bullmq";
+import { Queue, Job } from "bullmq";
 import IORedis from "ioredis";
 
 // Connessione Redis condivisa

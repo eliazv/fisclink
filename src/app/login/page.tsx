@@ -34,7 +34,7 @@ export default function LoginPage() {
         setStatus("error");
         setMessage(data.error || "Qualcosa è andato storto.");
       }
-    } catch (err) {
+    } catch {
       setStatus("error");
       setMessage("Errore di connessione.");
     }

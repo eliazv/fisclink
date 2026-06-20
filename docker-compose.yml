@@ -9,7 +9,7 @@ services:
     container_name: cf-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "55432:5432"
     environment:
       POSTGRES_USER: connettore
       POSTGRES_PASSWORD: connettore_dev_2026

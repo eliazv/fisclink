@@ -195,7 +195,7 @@ pnpm run db:studio
 Queste sono gia' nel file `.env`:
 
 ```env
-DATABASE_URL="postgresql://connettore:connettore_dev_2026@localhost:5432/connettore_fiscale?schema=public"
+DATABASE_URL="postgresql://connettore:connettore_dev_2026@localhost:55432/connettore_fiscale?schema=public"
 REDIS_URL="redis://localhost:6379"
 ENCRYPTION_SECRET="dev-change-me-in-prod-min-32-chars-random"
 AUTH_SECRET="dev-auth-secret-change-in-production-32chars"

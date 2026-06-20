@@ -1,8 +1,8 @@
 /**
- * API Magic Link - Recupero dati e submit
+ * API Magic Link - customer fiscal data collection.
  *
- * GET  /api/magic-link/[token] → Ritorna i dati della pagina magic link
- * POST /api/magic-link/[token] → Riceve i dati fiscali dal cliente
+ * GET  /api/magic-link/[token] returns the public form context.
+ * POST /api/magic-link/[token] stores customer fiscal data and resumes processing.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -11,25 +11,53 @@ import { validateFiscalData, type FiscalData } from "@/lib/validators/fiscal";
 import { enqueueInvoiceProcess } from "@/lib/queue";
 import { z } from "zod";
 
-// Schema di validazione per i dati fiscali inviati dal cliente
-const fiscalDataSchema = z.object({
-  customerType: z.enum(["PRIVATE", "BUSINESS", "FOREIGN"]),
-  name: z.string().min(1, "Nome o ragione sociale obbligatorio"),
-  fiscalCode: z.string().optional().nullable(),
-  vatNumber: z.string().optional().nullable(),
-  address: z.string().min(1, "Indirizzo obbligatorio"),
-  city: z.string().min(1, "Città obbligatoria"),
-  province: z.string().min(2, "Provincia obbligatoria").max(2),
-  zipCode: z.string().min(5, "CAP obbligatorio").max(5),
-  country: z.string().default("IT"),
-  sdiCode: z.string().optional().nullable(),
-  pecEmail: z.string().email().optional().nullable(),
-});
+const emptyToNull = z.preprocess(
+  (value) => (value === "" ? null : value),
+  z.string().optional().nullable(),
+);
 
-/**
- * GET /api/magic-link/[token]
- * Ritorna le info per la pagina di completamento dati.
- */
+const fiscalDataSchema = z
+  .object({
+    customerType: z.enum(["PRIVATE", "BUSINESS", "FOREIGN"]),
+    name: z.string().trim().min(1, "Nome o ragione sociale obbligatorio"),
+    fiscalCode: emptyToNull,
+    vatNumber: emptyToNull,
+    address: z.string().trim().optional().nullable(),
+    city: z.string().trim().optional().nullable(),
+    province: z.string().trim().optional().nullable(),
+    zipCode: z.string().trim().optional().nullable(),
+    country: z.string().trim().min(2, "Nazione obbligatoria").default("IT"),
+    sdiCode: emptyToNull,
+    pecEmail: z.preprocess(
+      (value) => (value === "" ? null : value),
+      z.string().email("PEC non valida").optional().nullable(),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    const isItalian = data.country.toUpperCase() === "IT";
+    if (!isItalian) return;
+
+    const requiredItalianFields: Array<
+      [keyof typeof data, string]
+    > = [
+      ["address", "Indirizzo obbligatorio per clienti italiani"],
+      ["city", "Citta obbligatoria per clienti italiani"],
+      ["zipCode", "CAP obbligatorio per clienti italiani"],
+      ["province", "Provincia obbligatoria per clienti italiani"],
+    ];
+
+    for (const [field, message] of requiredItalianFields) {
+      const value = data[field];
+      if (typeof value !== "string" || !value.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [field],
+          message,
+        });
+      }
+    }
+  });
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
@@ -83,13 +111,12 @@ export async function GET(
   if (magicLink.isCompleted) {
     return NextResponse.json({
       status: "completed",
-      message: "Dati fiscali già inseriti. La fattura è in elaborazione.",
+      message: "Dati fiscali gia inseriti.",
       merchant: magicLink.merchant,
     });
   }
 
   if (magicLink.isExpired || new Date() > magicLink.expiresAt) {
-    // Segna come scaduto se non lo era già
     if (!magicLink.isExpired) {
       await prisma.magicLink.update({
         where: { id: magicLink.id },
@@ -101,7 +128,7 @@ export async function GET(
       {
         status: "expired",
         error:
-          "Questo link è scaduto. Contatta il venditore per riceverne uno nuovo.",
+          "Questo link e scaduto. Contatta il venditore per riceverne uno nuovo.",
         merchant: magicLink.merchant,
       },
       { status: 410 },
@@ -116,7 +143,6 @@ export async function GET(
       currency: magicLink.invoice.currency,
       description: magicLink.invoice.description,
     },
-    // Dati pre-compilati (se il cliente ha comprato prima)
     prefilled: magicLink.customer
       ? {
           name: magicLink.customer.name,
@@ -135,17 +161,12 @@ export async function GET(
   });
 }
 
-/**
- * POST /api/magic-link/[token]
- * Riceve i dati fiscali dal cliente e riavvia il workflow.
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
 
-  // 1. Carica il magic link
   const magicLink = await prisma.magicLink.findUnique({
     where: { token },
     include: {
@@ -158,14 +179,13 @@ export async function POST(
   }
 
   if (magicLink.isCompleted) {
-    return NextResponse.json({ error: "Dati già inseriti" }, { status: 409 });
+    return NextResponse.json({ error: "Dati gia inseriti" }, { status: 409 });
   }
 
   if (magicLink.isExpired || new Date() > magicLink.expiresAt) {
     return NextResponse.json({ error: "Link scaduto" }, { status: 410 });
   }
 
-  // 2. Valida i dati ricevuti
   const body = await request.json();
   const parsed = fiscalDataSchema.safeParse(body);
 
@@ -179,9 +199,19 @@ export async function POST(
     );
   }
 
-  const data = parsed.data;
+  const data = {
+    ...parsed.data,
+    fiscalCode: parsed.data.fiscalCode?.toUpperCase() ?? null,
+    vatNumber: parsed.data.vatNumber?.toUpperCase() ?? null,
+    address: parsed.data.address ?? null,
+    city: parsed.data.city ?? null,
+    province: parsed.data.province?.toUpperCase() ?? null,
+    zipCode: parsed.data.zipCode ?? null,
+    country: parsed.data.country.toUpperCase(),
+    sdiCode: parsed.data.sdiCode?.toUpperCase() ?? null,
+    pecEmail: parsed.data.pecEmail?.toLowerCase() ?? null,
+  };
 
-  // 3. Validazione fiscale approfondita
   const fiscalValidation = validateFiscalData(data as FiscalData);
 
   if (!fiscalValidation.valid) {
@@ -194,7 +224,6 @@ export async function POST(
     );
   }
 
-  // 4. Aggiorna il cliente nel DB
   if (magicLink.customerId) {
     await prisma.customer.update({
       where: { id: magicLink.customerId },
@@ -213,11 +242,10 @@ export async function POST(
       },
     });
   } else {
-    // Crea customer se non esisteva
     const invoice = magicLink.invoice;
     const sourceData = invoice.sourceData as Record<string, unknown> | null;
     const email =
-      (sourceData?.customerEmail as string) ?? "unknown@unknown.com";
+      (sourceData?.customerEmail as string | undefined) ?? "unknown@unknown.com";
 
     const customer = await prisma.customer.create({
       data: {
@@ -237,14 +265,12 @@ export async function POST(
       },
     });
 
-    // Collega il customer all'invoice
     await prisma.invoice.update({
       where: { id: magicLink.invoiceId },
       data: { customerId: customer.id },
     });
   }
 
-  // 5. Segna il magic link come completato
   await prisma.magicLink.update({
     where: { id: magicLink.id },
     data: {
@@ -254,21 +280,19 @@ export async function POST(
     },
   });
 
-  // 6. Riavvia il workflow di fatturazione
   await enqueueInvoiceProcess({
     invoiceId: magicLink.invoiceId,
     merchantId: magicLink.merchantId,
-    sourceType: magicLink.invoice.sourceType as "STRIPE" | "SHOPIFY",
+    sourceType: magicLink.invoice.sourceType,
     sourceId: magicLink.invoice.sourceId,
   });
 
-  // 7. Audit log
   await prisma.auditLog.create({
     data: {
       merchantId: magicLink.merchantId,
       invoiceId: magicLink.invoiceId,
       action: "MAGIC_LINK_COMPLETED",
-      details: `Il cliente ha completato i dati fiscali tramite magic link`,
+      details: "Il cliente ha completato i dati fiscali tramite magic link",
       metadata: {
         customerType: data.customerType,
         hasFiscalCode: !!data.fiscalCode,
@@ -280,6 +304,6 @@ export async function POST(
   return NextResponse.json({
     success: true,
     message:
-      "Grazie! I tuoi dati fiscali sono stati ricevuti. La fattura verrà emessa a breve.",
+      "Grazie. I tuoi dati fiscali sono stati ricevuti e saranno preparati per il flusso di fatturazione del venditore.",
   });
 }
