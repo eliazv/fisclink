@@ -13,7 +13,7 @@
 # 1. Clona e installa
 git clone <repo-url>
 cd connettore-fiscale
-npm install
+pnpm install
 
 # 2. Configura environment
 cp .env.example .env
@@ -23,10 +23,10 @@ cp .env.example .env
 bash scripts/dev-start.sh
 
 # 4. In terminale 1: app Next.js
-npm run dev
+pnpm run dev
 
 # 5. In terminale 2: workers BullMQ
-npm run worker
+pnpm run worker
 
 # 6. (Opzionale) In terminale 3: webhook Stripe
 stripe listen --forward-to localhost:3000/api/webhooks/stripe?merchant=TUO_MERCHANT_ID
@@ -38,14 +38,14 @@ App disponibile su http://localhost:3000
 
 | Comando | Descrizione |
 |---|---|
-| `npm run dev` | Avvia Next.js in dev mode |
-| `npm run worker` | Avvia i 5 workers BullMQ |
-| `npm run build` | Build produzione |
-| `npm run start` | Avvia app in produzione |
-| `npm run db:migrate` | Esegui migrazioni (produzione) |
-| `npm run db:migrate:dev` | Crea nuove migrazioni (dev) |
-| `npm run db:generate` | Rigenera Prisma Client |
-| `npm run db:studio` | Apri Prisma Studio (GUI database) |
+| `pnpm run dev` | Avvia Next.js in dev mode |
+| `pnpm run worker` | Avvia i 5 workers BullMQ |
+| `pnpm run build` | Build produzione |
+| `pnpm run start` | Avvia app in produzione |
+| `pnpm run db:migrate` | Esegui migrazioni (produzione) |
+| `pnpm run db:migrate:dev` | Crea nuove migrazioni (dev) |
+| `pnpm run db:generate` | Rigenera Prisma Client |
+| `pnpm run db:studio` | Apri Prisma Studio (GUI database) |
 
 ---
 
@@ -70,8 +70,8 @@ Railway supporta processi long-running, perfetto per i workers BullMQ.
 
 1. Clicca sul servizio della tua app
 2. Vai su "Settings":
-   - Build Command: `npm run build`
-   - Start Command: `npm run start`
+   - Build Command: `pnpm run build`
+   - Start Command: `pnpm run start`
 3. Vai su "Variables" e aggiungi:
 
 ```
@@ -91,7 +91,7 @@ Nota: `DATABASE_URL` e `REDIS_URL` vengono iniettate automaticamente se hai coll
 
 1. Nel progetto, clicca "New" → "GitHub Repo" → stesso repo
 2. Settings:
-   - Start Command: `npm run worker`
+   - Start Command: `pnpm run worker`
 3. Collega lo stesso PostgreSQL e Redis (clicca sul DB → "Connect" → seleziona il servizio worker)
 4. Copia le stesse variabili d'ambiente del servizio app
 
@@ -100,11 +100,11 @@ Nota: `DATABASE_URL` e `REDIS_URL` vengono iniettate automaticamente se hai coll
 Railway esegue il build automaticamente. Per le migrazioni:
 
 1. Vai sul servizio app → "Settings"
-2. Cambia Build Command a: `npx prisma migrate deploy && npm run build`
+2. Cambia Build Command a: `pnpm exec prisma migrate deploy && pnpm run build`
 
 Oppure usa la Railway CLI:
 ```bash
-railway run npx prisma migrate deploy
+railway run pnpm exec prisma migrate deploy
 ```
 
 ### Passo 6: Dominio custom
@@ -140,12 +140,12 @@ railway run npx prisma migrate deploy
 
 ```
 1. render.com → New Web Service → connetti GitHub
-2. Build: npm run build
-3. Start: npm start
+2. Build: pnpm run build
+3. Start: pnpm start
 4. New → PostgreSQL (free 256MB)
 5. New → Redis (free)
 6. New → Background Worker (per i workers BullMQ)
-   Start: npm run worker
+   Start: pnpm run worker
 7. Configura le stesse variabili d'ambiente
 ```
 
@@ -188,7 +188,7 @@ Se hai un VPS (Hetzner €4/mese):
 ### Obbligatori
 - [ ] Dominio registrato e DNS configurato
 - [ ] SSL attivo (automatico su Railway/Render/Fly)
-- [ ] Database migrato (`npx prisma migrate deploy`)
+- [ ] Database migrato (`pnpm exec prisma migrate deploy`)
 - [ ] Variabili d'ambiente produzione configurate
 - [ ] Stripe live keys configurate
 - [ ] Webhook Stripe endpoint produzione attivo

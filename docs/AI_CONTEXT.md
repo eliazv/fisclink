@@ -169,9 +169,9 @@ connettore-fiscale/
 ```bash
 docker compose up -d          # PostgreSQL + Redis
 cp .env.example .env          # Configura variabili
-npx prisma migrate dev        # Crea tabelle
-npm run dev                   # Next.js su :3000
-npx tsx src/lib/workers/start.ts  # Worker (terminale separato)
+pnpm exec prisma migrate dev  # Crea tabelle
+pnpm run dev                  # Next.js su :3000
+pnpm exec tsx src/lib/workers/start.ts  # Worker (terminale separato)
 ```
 
 ## Servizi esterni necessari

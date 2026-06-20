@@ -67,6 +67,7 @@ Export / integrazione opzionale con Fatture in Cloud
 ### Prerequisiti
 
 - Node.js 20+
+- pnpm 10+ (`npm i -g pnpm` se non lo hai)
 - PostgreSQL
 - Redis
 - Account Stripe in test mode
@@ -78,16 +79,16 @@ Export / integrazione opzionale con Fatture in Cloud
 ```bash
 git clone <repo-url>
 cd fisclink
-npm install
+pnpm install
 cp .env.example .env
-npx prisma migrate dev --name init
-npm run dev
+pnpm exec prisma migrate dev --name init
+pnpm dev
 ```
 
 In un secondo terminale:
 
 ```bash
-npm run worker
+pnpm worker
 ```
 
 Per testare i webhook Stripe in locale:
@@ -99,12 +100,12 @@ stripe listen --forward-to "localhost:3000/api/webhooks/stripe?merchant=YOUR_MER
 ## Script utili
 
 ```bash
-npm run dev          # Avvia Next.js
-npm run worker       # Avvia i worker BullMQ
-npm run build        # Build produzione
-npm run lint         # ESLint
-npm run test         # Test Vitest
-npm run db:studio    # Prisma Studio
+pnpm dev             # Avvia Next.js
+pnpm worker          # Avvia i worker BullMQ
+pnpm build           # Build produzione
+pnpm lint            # ESLint
+pnpm test            # Test Vitest
+pnpm db:studio       # Prisma Studio
 ```
 
 ## Roadmap pragmatica

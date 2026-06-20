@@ -15,24 +15,24 @@ Start-Sleep -Seconds 3
 
 # 2. Migrazioni
 Write-Host "[2/4] Migrazioni database..." -ForegroundColor Cyan
-npx prisma migrate deploy 2>$null
+pnpm exec prisma migrate deploy 2>$null
 if ($LASTEXITCODE -ne 0) {
-    npx prisma migrate dev --name init
+    pnpm exec prisma migrate dev --name init
 }
-npx prisma generate
+pnpm exec prisma generate
 
 # 3. Next.js + Workers in parallelo
 Write-Host "[3/4] Avvio Next.js..." -ForegroundColor Cyan
 $nextJob = Start-Job -ScriptBlock {
     Set-Location $using:PWD
-    npm run dev 2>&1
+    pnpm run dev 2>&1
 }
 
 Start-Sleep -Seconds 2
 Write-Host "[4/4] Avvio Workers BullMQ..." -ForegroundColor Cyan
 $workerJob = Start-Job -ScriptBlock {
     Set-Location $using:PWD
-    npm run worker 2>&1
+    pnpm run worker 2>&1
 }
 
 Write-Host ""
@@ -42,7 +42,7 @@ Write-Host "=======================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "  App:       http://localhost:3000" -ForegroundColor Blue
 Write-Host "  Dashboard: http://localhost:3000/dashboard" -ForegroundColor Blue
-Write-Host "  DB Studio: npm run db:studio" -ForegroundColor Cyan
+Write-Host "  DB Studio: pnpm run db:studio" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Ctrl+C per fermare" -ForegroundColor Yellow
 Write-Host ""
