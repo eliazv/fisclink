@@ -1,10 +1,22 @@
 # FiscLink
 
-Open source Stripe fiscal bridge for Italy.
+[![CI](https://github.com/eliazv/fisclink/actions/workflows/ci.yml/badge.svg)](https://github.com/eliazv/fisclink/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
 
-FiscLink aiuta chi usa Stripe in Italia a raccogliere, validare e normalizzare i dati fiscali necessari per la fatturazione elettronica italiana.
+**Raccogli e valida i dati fiscali italiani (Codice Fiscale, Partita IVA, SDI, PEC) mancanti dai pagamenti Stripe.**
+
+Open source, self-hosted, pensato per developer, freelance e piccoli SaaS italiani che incassano con Stripe ma si trovano senza i dati necessari per la fatturazione elettronica.
 
 > Stato del progetto: early preview / developer tool. Non è un gestionale fiscale completo e non sostituisce commercialista, consulente fiscale o provider accreditato SdI.
+
+## Perché esiste
+
+In Italia la fatturazione elettronica è obbligatoria per la quasi totalità delle partite IVA. Stripe però non raccoglie in modo affidabile Codice Fiscale, Partita IVA, indirizzo o codice destinatario SDI/PEC al momento del pagamento.
+
+Il risultato è che chi vende con Stripe in Italia finisce a rincorrere i clienti via email per i dati fiscali mancanti, oppure rischia fatture incomplete o in ritardo verso il commercialista.
+
+FiscLink automatizza solo questa parte: webhook Stripe → controllo dati → Magic Link al cliente se manca qualcosa → dati validati e pronti per l'export o per il gestionale fiscale che già usi.
 
 ## Cosa fa
 
@@ -134,6 +146,19 @@ pnpm db:studio       # Prisma Studio
 - [ ] Mapping IVA configurabile
 - [ ] Provider fiscali aggiuntivi
 - [ ] Supporto OSS/estero documentato
+
+## Integrazioni future (presenti nel codice, disattivate per ora)
+
+Il codice include già client per Shopify e WooCommerce (`src/lib/shopify`, `src/lib/woocommerce`), ma non sono esposti nella UI e sono disabilitati di default. La fase attuale del progetto è volutamente concentrata solo su Stripe: prima va reso solido quel flusso, poi si riattivano gli altri provider.
+
+## Documentazione
+
+- [`docs/SETUP.md`](docs/SETUP.md) — setup completo, servizi esterni, deploy
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — deploy su Railway/Render/Fly/VPS
+- [`docs/TEST_GUIDE.md`](docs/TEST_GUIDE.md) — guida ai test manuali end-to-end
+- [`docs/AI_CONTEXT.md`](docs/AI_CONTEXT.md) — contesto tecnico per chi (o cosa) lavora sul codice
+- [`docs/DEVELOPMENT_ROADMAP.md`](docs/DEVELOPMENT_ROADMAP.md) — direzione di sviluppo
+- [`docs/PRODUCT_POSITIONING.md`](docs/PRODUCT_POSITIONING.md) — cosa promettere e cosa no
 
 ## Disclaimer fiscale
 
