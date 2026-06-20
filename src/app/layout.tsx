@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import ThemeProvider from "@/components/layout/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,23 +15,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "FiscLink – Fatturazione elettronica automatica da Stripe",
+    default: "FiscLink – Open source Stripe fiscal bridge per l'Italia",
     template: "%s | FiscLink",
   },
   description:
-    "Trasforma ogni pagamento Stripe in una fattura elettronica a norma SDI. Magic Link per raccogliere dati fiscali, bollo automatico, regime forfettario. Per PMI italiane.",
+    "Raccogli e valida Codice Fiscale, Partita IVA, SDI e PEC dai pagamenti Stripe con un Magic Link al cliente. Open source, self-hosted, pensato per piccoli SaaS e freelance italiani.",
   keywords: [
-    "fattura elettronica automatica",
-    "Stripe fattura elettronica Italia",
-    "fatturazione elettronica Stripe",
-    "connettore Stripe Fatture in Cloud",
-    "fattura elettronica forfettario",
-    "SDI automatico",
-    "Shopify fattura elettronica",
-    "e-commerce fatturazione Italia",
-    "codice fiscale checkout",
-    "bollo virtuale automatico",
-    "Magic Link dati fiscali",
+    "stripe fatturazione elettronica",
+    "dati fiscali stripe",
+    "codice fiscale stripe",
+    "partita iva stripe",
+    "sdi pec stripe",
+    "magic link dati fiscali",
+    "open source fatturazione italiana",
+    "self-hosted fattura elettronica",
+    "stripe billing italia",
   ],
   authors: [{ name: "FiscLink" }],
   creator: "FiscLink",
@@ -42,23 +41,23 @@ export const metadata: Metadata = {
     locale: "it_IT",
     url: "/",
     siteName: "FiscLink",
-    title: "FiscLink – Fatturazione elettronica automatica da Stripe",
+    title: "FiscLink – Open source Stripe fiscal bridge per l'Italia",
     description:
-      "Smetti di rincorrere i clienti per il Codice Fiscale. Ogni pagamento Stripe diventa fattura SDI in automatico.",
+      "Stripe incassa, ma spesso mancano i dati fiscali italiani. FiscLink li raccoglie e li valida con un Magic Link al cliente, poi li prepara per il tuo flusso di fatturazione.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/fisclink.png",
         width: 1200,
         height: 630,
-        alt: "FiscLink – Fatturazione automatica",
+        alt: "FiscLink",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FiscLink – Fattura elettronica da Stripe in automatico",
+    title: "FiscLink – Open source Stripe fiscal bridge per l'Italia",
     description:
-      "Collega Stripe a Fatture in Cloud. Magic Link per dati fiscali mancanti. Bollo calcolato. SDI inviata.",
+      "Raccogli e valida CF, P.IVA, SDI e PEC dai pagamenti Stripe. Open source e self-hosted.",
   },
   robots: {
     index: true,
@@ -82,7 +81,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="it">
+    <html lang="it" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <script
@@ -92,23 +91,22 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
               name: "FiscLink",
-              applicationCategory: "BusinessApplication",
-              operatingSystem: "Web",
+              applicationCategory: "DeveloperApplication",
+              operatingSystem: "Self-hosted",
               description:
-                "Middleware SaaS che collega Stripe alla fatturazione elettronica italiana SDI tramite Fatture in Cloud.",
+                "Tool open source e self-hosted che raccoglie e valida i dati fiscali italiani (Codice Fiscale, Partita IVA, SDI, PEC) dai pagamenti Stripe tramite un Magic Link al cliente.",
+              license: "https://opensource.org/licenses/MIT",
               offers: {
-                "@type": "AggregateOffer",
-                lowPrice: "0",
-                highPrice: "99",
+                "@type": "Offer",
+                price: "0",
                 priceCurrency: "EUR",
-                offerCount: 4,
               },
               featureList: [
-                "Fatturazione elettronica automatica",
-                "Magic Link per dati fiscali",
-                "Bollo virtuale automatico",
-                "Regime forfettario",
-                "Dashboard merchant",
+                "Webhook Stripe",
+                "Magic Link per dati fiscali mancanti",
+                "Validazione Codice Fiscale e Partita IVA",
+                "Export CSV/JSON",
+                "Integrazione opzionale con Fatture in Cloud",
               ],
             }),
           }}
@@ -117,7 +115,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

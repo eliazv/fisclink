@@ -8,10 +8,10 @@
 
 # Oppure avvia manualmente:
 docker compose up -d
-npx prisma migrate deploy
-npx prisma generate
-npm run dev        # terminale 1
-npm run worker     # terminale 2
+pnpm exec prisma migrate deploy
+pnpm exec prisma generate
+pnpm run dev       # terminale 1
+pnpm run worker    # terminale 2
 ```
 
 App: http://localhost:3000
@@ -27,7 +27,7 @@ In dev mode il link di login viene stampato nei log della console.
 
 1. Vai su http://localhost:3000/login
 2. Inserisci una email qualsiasi (es. `test@example.com`)
-3. Guarda i log del terminale dove gira `npm run dev`
+3. Guarda i log del terminale dove gira `pnpm run dev`
 4. Troverai questo output:
 
 ```
@@ -99,7 +99,7 @@ La CLI stampa un `whsec_...` temporaneo. Copialo e inseriscilo nelle impostazion
 
 Dopo il login, apri Prisma Studio:
 ```powershell
-npm run db:studio
+pnpm run db:studio
 ```
 Vai sulla tabella `merchants` → copia l'`id` del tuo merchant.
 
@@ -144,7 +144,7 @@ Il Magic Link è la feature principale. Per testarlo:
 ### Metodo 2: Diretto nel DB (manuale)
 
 ```powershell
-npm run db:studio
+pnpm run db:studio
 ```
 
 1. Crea un record in `invoices` (con dati minimi)
@@ -214,7 +214,7 @@ STRIPE_WEBHOOK_SECRET="whsec_..."
 ## 7. Prisma Studio (GUI Database)
 
 ```powershell
-npm run db:studio
+pnpm run db:studio
 ```
 
 Apre un'interfaccia web su http://localhost:5555 dove puoi:
@@ -254,7 +254,7 @@ docker compose logs redis
 ```
 
 ### "Login non funziona"
-In dev mode, il link di login viene stampato nella console di `npm run dev`. Cercalo li'.
+In dev mode, il link di login viene stampato nella console di `pnpm run dev`. Cercalo li'.
 
 ### "Webhook Stripe non arriva"
 - Verifica che Stripe CLI sia connessa: `stripe listen --forward-to ...`

@@ -129,6 +129,7 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount, no external sync alternative here
     loadSettings();
     loadTaxMappings();
   }, [loadSettings, loadTaxMappings]);

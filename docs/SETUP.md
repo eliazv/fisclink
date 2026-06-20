@@ -5,7 +5,7 @@
 | Strumento                   | Versione          | Scopo                     |
 | --------------------------- | ----------------- | ------------------------- |
 | **Node.js**                 | ≥ 20 LTS          | Runtime                   |
-| **pnpm** (o npm/yarn)       | ≥ 9               | Package manager           |
+| **pnpm**                    | ≥ 10              | Package manager           |
 | **Docker + Docker Compose** | Qualsiasi recente | PostgreSQL + Redis locali |
 | **Stripe CLI**              | Ultima            | Forward webhook in locale |
 
@@ -80,8 +80,8 @@ EMAIL_FROM="FiscLink <noreply@tuodominio.it>"
 ### 2.4 Inizializza il database
 
 ```bash
-npx prisma migrate dev --name init
-npx prisma generate
+pnpm exec prisma migrate dev --name init
+pnpm exec prisma generate
 ```
 
 ### 2.5 Avvia l'app
@@ -105,7 +105,7 @@ La CLI stamperà il webhook signing secret (`whsec_...`), salvalo in `.env` come
 ### 2.7 Avvia i worker (in un terminale separato)
 
 ```bash
-npx tsx src/lib/workers/start.ts
+pnpm exec tsx src/lib/workers/start.ts
 ```
 
 I worker elaborano le code BullMQ: creazione fatture, invio SDI, magic link, rimborsi.
@@ -182,7 +182,7 @@ Database: PostgreSQL (Prisma ORM)
 I worker BullMQ **non** girano su Vercel (serverless ≠ long-running).
 Opzioni:
 
-- **Railway**: Crea un servizio con start command `npx tsx src/lib/workers/start.ts`
+- **Railway**: Crea un servizio con start command `pnpm exec tsx src/lib/workers/start.ts`
 - **Fly.io**: Dockerfile con CMD per i worker
 - **VPS**: PM2 con `pm2 start src/lib/workers/start.ts --interpreter=tsx`
 
@@ -236,7 +236,7 @@ Opzioni:
 ### Database
 
 - [ ] Backup automatici configurati (Supabase li include)
-- [ ] Migration eseguita: `npx prisma migrate deploy`
+- [ ] Migration eseguita: `pnpm exec prisma migrate deploy`
 - [ ] Indici verificati (Prisma li crea da schema)
 
 ### Monitoraggio
@@ -259,14 +259,14 @@ Opzioni:
 ```bash
 # Sviluppo
 pnpm dev                                    # App Next.js
-npx tsx src/lib/workers/start.ts            # Worker BullMQ
+pnpm exec tsx src/lib/workers/start.ts            # Worker BullMQ
 stripe listen --forward-to localhost:3000/api/webhooks/stripe?merchant=ID
 
 # Database
-npx prisma studio                           # GUI database
-npx prisma migrate dev --name <nome>        # Nuova migration
-npx prisma migrate deploy                   # Applica in produzione
-npx prisma generate                         # Rigenera client
+pnpm exec prisma studio                     # GUI database
+pnpm exec prisma migrate dev --name <nome>  # Nuova migration
+pnpm exec prisma migrate deploy             # Applica in produzione
+pnpm exec prisma generate                   # Rigenera client
 
 # Test
 pnpm test                                   # Tutti i test

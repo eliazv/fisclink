@@ -7,7 +7,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// TODO: Sostituire con autenticazione reale via next-auth
 function getMerchantId(request: NextRequest): string | null {
   return request.headers.get("x-merchant-id");
 }

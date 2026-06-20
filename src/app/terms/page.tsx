@@ -24,9 +24,10 @@ export default function TermsPage() {
         <div className="prose prose-gray prose-sm max-w-none space-y-8">
           <Section title="1. Descrizione del Servizio">
             <p>
-              FiscLink è un servizio SaaS che automatizza la creazione e l'invio di fatture
-              elettroniche al Sistema di Interscambio (SDI) italiano, collegando piattaforme
-              di pagamento (Stripe) con sistemi di fatturazione (Fatture in Cloud).
+              FiscLink è un software open source e self-hosted che assiste la raccolta e
+              validazione dei dati fiscali necessari alla fatturazione elettronica al Sistema
+              di Interscambio (SDI) italiano, collegando piattaforme di pagamento (Stripe) con
+              sistemi di fatturazione (es. Fatture in Cloud).
             </p>
           </Section>
 
@@ -42,16 +43,16 @@ export default function TermsPage() {
               <li>Sei responsabile della correttezza delle credenziali API inserite (Stripe, Fatture in Cloud)</li>
               <li>Sei responsabile della correttezza dei dati fiscali della tua azienda (P.IVA, CF, regime fiscale)</li>
               <li>Devi mantenere riservate le credenziali di accesso al tuo account</li>
-              <li>Devi avere l'autorizzazione legale per emettere fatture per conto della tua azienda</li>
+              <li>Devi avere l&apos;autorizzazione legale per emettere fatture per conto della tua azienda</li>
             </ul>
           </Section>
 
           <Section title="4. Magic Link e Dati dei Clienti Finali">
             <p>
               FiscLink raccoglie dati fiscali dai clienti finali dei merchant tramite il
-              sistema "Magic Link". Il merchant è e resta il Titolare del trattamento
+              sistema &quot;Magic Link&quot;. Il merchant è e resta il Titolare del trattamento
               dei dati dei propri clienti. FiscLink agisce come Responsabile del trattamento
-              ai sensi dell'art. 28 del GDPR.
+              ai sensi dell&apos;art. 28 del GDPR.
             </p>
             <ul>
               <li>I dati raccolti tramite Magic Link sono utilizzati esclusivamente per la fatturazione</li>
@@ -70,7 +71,7 @@ export default function TermsPage() {
                 errati forniti dal merchant o dai suoi clienti
               </li>
               <li>
-                <strong>Non siamo responsabili</strong> per sanzioni derivanti da ritardi nell'emissione
+                <strong>Non siamo responsabili</strong> per sanzioni derivanti da ritardi nell&apos;emissione
                 delle fatture causati da downtime di servizi terzi (Stripe, Fatture in Cloud, SDI)
               </li>
               <li>
@@ -96,19 +97,19 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="7. Piani e Pagamenti">
-            <ul>
-              <li>Il piano gratuito include fino a 20 fatture al mese</li>
-              <li>I piani a pagamento vengono fatturati mensilmente tramite Stripe</li>
-              <li>Il superamento del limite fatture comporta la sospensione dell'emissione automatica fino al rinnovo</li>
-              <li>I rimborsi sono gestiti secondo la politica di rimborso in vigore al momento dell'acquisto</li>
-            </ul>
+          <Section title="7. Self-hosting e Costi">
+            <p>
+              FiscLink è distribuito gratuitamente con licenza MIT. Non esiste un piano a
+              pagamento gestito da FiscLink: chi lo usa lo installa ed esegue sulla propria
+              infrastruttura, sostenendo direttamente gli eventuali costi di hosting e dei
+              servizi terzi collegati (Stripe, Fatture in Cloud, Resend, ecc.).
+            </p>
           </Section>
 
           <Section title="8. Proprietà Intellettuale">
             <p>
               FiscLink e il suo codice sorgente, design, logo e contenuti sono di proprietà
-              del Titolare. L'utilizzo del servizio non conferisce alcun diritto di proprietà
+              del Titolare. L&apos;utilizzo del servizio non conferisce alcun diritto di proprietà
               intellettuale sul software.
             </p>
           </Section>

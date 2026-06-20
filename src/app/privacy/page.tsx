@@ -24,8 +24,8 @@ export default function PrivacyPage() {
         <div className="prose prose-gray prose-sm max-w-none space-y-8">
           <Section title="1. Titolare del Trattamento">
             <p>
-              Il titolare del trattamento dei dati personali è FiscLink (di seguito "Titolare"),
-              contattabile all'indirizzo email: <strong>privacy@fisclink.it</strong>.
+              Il titolare del trattamento dei dati personali è FiscLink (di seguito &quot;Titolare&quot;),
+              contattabile all&apos;indirizzo email: <strong>privacy@fisclink.it</strong>.
             </p>
           </Section>
 
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
             <ul>
               <li>Creazione e invio di fatture elettroniche allo SDI tramite Fatture in Cloud</li>
               <li>Raccolta dati fiscali mancanti tramite Magic Link</li>
-              <li>Gestione dell'account merchant e autenticazione</li>
+              <li>Gestione dell&apos;account merchant e autenticazione</li>
               <li>Adempimenti fiscali e contabili obbligatori per legge</li>
               <li>Invio di comunicazioni di servizio (reminder Magic Link, notifiche errori)</li>
             </ul>
@@ -51,7 +51,7 @@ export default function PrivacyPage() {
 
           <Section title="4. Base Giuridica">
             <ul>
-              <li><strong>Esecuzione contrattuale:</strong> il trattamento è necessario per l'erogazione del servizio</li>
+              <li><strong>Esecuzione contrattuale:</strong> il trattamento è necessario per l&apos;erogazione del servizio</li>
               <li><strong>Obbligo legale:</strong> adempimenti fiscali previsti dalla normativa italiana (D.Lgs. 127/2015)</li>
               <li><strong>Legittimo interesse:</strong> prevenzione frodi e sicurezza del servizio</li>
             </ul>
@@ -61,16 +61,16 @@ export default function PrivacyPage() {
             <p>
               Tutte le chiavi API sono cifrate con <strong>AES-256-GCM</strong> prima di essere salvate nel database.
               Le comunicazioni avvengono esclusivamente tramite HTTPS.
-              L'autenticazione avviene tramite token JWT con scadenza.
+              L&apos;autenticazione avviene tramite token JWT con scadenza.
             </p>
           </Section>
 
           <Section title="6. Condivisione dei Dati">
             <p>I dati personali vengono condivisi esclusivamente con:</p>
             <ul>
-              <li><strong>Fatture in Cloud (TeamSystem):</strong> per la creazione e l'invio delle fatture elettroniche</li>
+              <li><strong>Fatture in Cloud (TeamSystem):</strong> per la creazione e l&apos;invio delle fatture elettroniche</li>
               <li><strong>Stripe:</strong> per la ricezione dei dati di pagamento tramite webhook</li>
-              <li><strong>Resend:</strong> per l'invio delle email (Magic Link e notifiche)</li>
+              <li><strong>Resend:</strong> per l&apos;invio delle email (Magic Link e notifiche)</li>
             </ul>
             <p>Non vendiamo né condividiamo dati con terze parti per finalità di marketing.</p>
           </Section>
@@ -78,9 +78,9 @@ export default function PrivacyPage() {
           <Section title="7. Conservazione">
             <p>
               I dati fiscali vengono conservati per il periodo previsto dalla normativa italiana
-              (10 anni ai sensi dell'art. 2220 del Codice Civile).
-              I dati dell'account merchant vengono conservati per tutta la durata del contratto
-              e cancellati entro 30 giorni dalla chiusura dell'account.
+              (10 anni ai sensi dell&apos;art. 2220 del Codice Civile).
+              I dati dell&apos;account merchant vengono conservati per tutta la durata del contratto
+              e cancellati entro 30 giorni dalla chiusura dell&apos;account.
             </p>
           </Section>
 
@@ -89,7 +89,7 @@ export default function PrivacyPage() {
             <ul>
               <li>Accedere ai tuoi dati personali</li>
               <li>Rettificare dati inesatti</li>
-              <li>Cancellare i tuoi dati (diritto all'oblio), salvo obblighi di legge</li>
+              <li>Cancellare i tuoi dati (diritto all&apos;oblio), salvo obblighi di legge</li>
               <li>Limitare il trattamento</li>
               <li>Portabilità dei dati</li>
               <li>Opporti al trattamento</li>
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
           <Section title="10. Modifiche">
             <p>
               Ci riserviamo il diritto di aggiornare questa informativa. Le modifiche saranno
-              pubblicate su questa pagina con l'aggiornamento della data in alto.
+              pubblicate su questa pagina con l&apos;aggiornamento della data in alto.
             </p>
           </Section>
         </div>

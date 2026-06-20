@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface OverviewData {
   merchantName: string;
@@ -69,12 +69,7 @@ export default function AccountantDashboard({
     params.then((p) => setToken(p.token));
   }, [params]);
 
-  useEffect(() => {
-    if (!token) return;
-    fetchData();
-  }, [token, view, month]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -92,7 +87,13 @@ export default function AccountantDashboard({
     } finally {
       setLoading(false);
     }
-  }
+  }, [token, view, month]);
+
+  useEffect(() => {
+    if (!token) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-param-change, no external sync alternative here
+    fetchData();
+  }, [token, fetchData]);
 
   if (error) {
     return (

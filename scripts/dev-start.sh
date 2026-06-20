@@ -41,18 +41,18 @@ sleep 2
 
 # 2. Migrazioni
 echo -e "${CYAN}[2/4]${NC} Migrazioni database..."
-npx prisma migrate deploy 2>/dev/null || npx prisma migrate dev --name init 2>/dev/null
-npx prisma generate 2>/dev/null
+pnpm exec prisma migrate deploy 2>/dev/null || pnpm exec prisma migrate dev --name init 2>/dev/null
+pnpm exec prisma generate 2>/dev/null
 
 # 3. Next.js in background
 echo -e "${CYAN}[3/4]${NC} Avvio Next.js..."
-npm run dev &
+pnpm run dev &
 NEXT_PID=$!
 
 # 4. Workers in background
 sleep 2
 echo -e "${CYAN}[4/4]${NC} Avvio Workers BullMQ..."
-npm run worker &
+pnpm run worker &
 WORKER_PID=$!
 
 echo ""
@@ -62,7 +62,7 @@ echo -e "${GREEN}═════════════════════
 echo ""
 echo -e "  App:       ${BLUE}http://localhost:3000${NC}"
 echo -e "  Dashboard: ${BLUE}http://localhost:3000/dashboard${NC}"
-echo -e "  DB Studio: ${CYAN}npm run db:studio${NC}"
+echo -e "  DB Studio: ${CYAN}pnpm run db:studio${NC}"
 echo ""
 echo -e "  ${YELLOW}Ctrl+C per fermare app + workers${NC}"
 echo ""
