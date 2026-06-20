@@ -130,8 +130,8 @@ pnpm db:studio       # Prisma Studio
 - [x] Validazione fiscale italiana formale
 - [x] Dashboard stato documenti
 - [ ] Supporto completo a `invoice.paid` per abbonamenti Stripe Billing
-- [ ] Export CSV/JSON per commercialista
-- [ ] `.env.example` e documentazione self-hosting
+- [x] Export CSV/JSON per commercialista
+- [x] `.env.example` e documentazione self-hosting
 
 ### v0.2 — Export e integrazioni
 

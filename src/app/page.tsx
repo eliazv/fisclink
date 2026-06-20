@@ -185,7 +185,7 @@ export default function Home() {
               Roadmap semplice
             </h2>
             <p className="mt-4 text-lg leading-8 text-slate-600">
-              La direzione è togliere rumore e completare il caso d'uso Stripe
+              La direzione è togliere rumore e completare il caso d&apos;uso Stripe
               prima di aggiungere altri canali o provider.
             </p>
           </div>
@@ -209,7 +209,7 @@ export default function Home() {
             <p className="mt-4 leading-8">
               FiscLink è uno strumento tecnico. Non fornisce consulenza fiscale
               e non garantisce che una fattura sia corretta, emessa, trasmessa o
-              conservata a norma. Prima dell'uso in produzione, verifica il
+              conservata a norma. Prima dell&apos;uso in produzione, verifica il
               flusso con commercialista, consulente fiscale o provider di
               fatturazione elettronica.
             </p>
